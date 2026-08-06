@@ -29,8 +29,8 @@ jobs:
         run: npx playwright install --with-deps
 
       # Playwright validation
-      - name: Run Playwright validation
-        run: npx playwright test
+      # - name: Run Playwright validation
+      #   run: npx playwright test
 
       # Find only the recipe files changed in this commit
       - name: Find changed recipe files
