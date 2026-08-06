@@ -1,0 +1,154 @@
+name: Recipe Validation & Ingestion
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.recipe.json"
+
+jobs:
+  recipe-ingestion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # Playwright validation
+      - name: Run Playwright validation
+        run: npx playwright test
+
+      # Find only the recipe files changed in this commit
+      - name: Find changed recipe files
+        id: recipes
+        shell: bash
+        run: |
+          git diff --name-only HEAD^ HEAD -- '*.recipe.json' > changed-recipes.txt
+
+          echo "Changed recipe files:"
+          cat changed-recipes.txt
+
+          if [ ! -s changed-recipes.txt ]; then
+            echo "No recipe files changed."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Upload → Validate → Ingest
+      - name: Validate and ingest recipes
+        if: steps.recipes.outputs.found == 'true'
+        env:
+          API_URL: ${{ secrets.INGESTION_API_URL }}
+          API_TOKEN: ${{ secrets.INGESTION_API_TOKEN }}
+        shell: bash
+        run: |
+          set -e
+
+          while IFS= read -r file; do
+
+            echo ""
+            echo "======================================"
+            echo "Processing: $file"
+            echo "======================================"
+
+            # ----------------------------------------
+            # 1. Upload recipe
+            # ----------------------------------------
+
+            echo "Uploading recipe..."
+
+            upload_response=$(curl --fail-with-body -s \
+              -X POST "$API_URL/api/v1/upload" \
+              -H "Authorization: Bearer $API_TOKEN" \
+              -F "file=@$file")
+
+            echo "Upload response:"
+            echo "$upload_response" | jq .
+
+            upload_id=$(echo "$upload_response" | jq -r '.upload_id')
+
+            if [ -z "$upload_id" ] || [ "$upload_id" = "null" ]; then
+              echo "ERROR: upload_id was not returned."
+              exit 1
+            fi
+
+            echo "Upload ID: $upload_id"
+
+            # ----------------------------------------
+            # 2. Validate recipe
+            # ----------------------------------------
+
+            echo "Validating recipe..."
+
+            validate_response=$(curl --fail-with-body -s \
+              -X POST "$API_URL/api/v1/validate" \
+              -H "Authorization: Bearer $API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"upload_id\":\"$upload_id\"}")
+
+            echo "Validation response:"
+            echo "$validate_response" | jq .
+
+            can_ingest=$(echo "$validate_response" | jq -r '.can_ingest')
+
+            if [ "$can_ingest" != "true" ]; then
+              echo ""
+              echo "======================================"
+              echo "VALIDATION FAILED"
+              echo "Recipe: $file"
+              echo "Upload ID: $upload_id"
+              echo "======================================"
+
+              echo "$validate_response" | jq '.errors // .'
+
+              exit 1
+            fi
+
+            echo "Validation passed."
+
+            # ----------------------------------------
+            # 3. Start ingestion
+            # ----------------------------------------
+
+            echo "Starting ingestion..."
+
+            ingest_response=$(curl --fail-with-body -s \
+              -X POST "$API_URL/api/v1/ingest" \
+              -H "Authorization: Bearer $API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"upload_id\":\"$upload_id\"}")
+
+            echo "Ingestion response:"
+            echo "$ingest_response" | jq .
+
+            job_id=$(echo "$ingest_response" | jq -r '.job_id')
+
+            if [ -z "$job_id" ] || [ "$job_id" = "null" ]; then
+              echo "ERROR: job_id was not returned."
+              exit 1
+            fi
+
+            echo ""
+            echo "======================================"
+            echo "INGESTION STARTED"
+            echo "Recipe: $file"
+            echo "Upload ID: $upload_id"
+            echo "Job ID: $job_id"
+            echo "======================================"
+
+          done < changed-recipes.txt
