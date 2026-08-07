@@ -1,0 +1,1556 @@
+[
+  {
+    "id": "compliance.browse-dashboard",
+    "title": "Open the Compliance Monitoring dashboard",
+    "intents": [
+      "show me compliance",
+      "open compliance monitoring",
+      "how many compliance issues do we have",
+      "go to compliance tracking",
+      "what compliance issues are open",
+      "open the compliance dashboard"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.distribution-chart"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-card"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.country-section"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "This is the compliance dashboard. The sidebar is not drawn on this screen — the page carries its own top bar instead — which is the layout's doing rather than a fault.",
+      "The doughnut is the whole picture in one figure: the total number of issues in scope, split by category.",
+      "Each card is one category — its share of the total, the issue count, and a coloured strip for how hot it is. A category with no issues still gets a card, reading 0%.",
+      "Below that, one collapsible section per country, with Total, Open and Closed counts. Open the section to see the stations inside it. Everything on this screen answers to the two filters at the top, Status and Duration, and both start unset."
+    ],
+    "notes": "Route /compliance is declared OUTSIDE the Layout wrapper, so the app sidebar is not rendered here and the opening highlight has to be optional — the click still works, because the player navigates sidebar targets by route. The route itself carries no RequirePermission; the only gate is the sidebar item's compliance:read. Measured 2026-07-26: 6 issues, 6 categories (Quality 3, Unclassified 3, four at zero), 4 countries with one station each."
+  },
+  {
+    "id": "compliance.filter-by-status",
+    "title": "Filter the compliance dashboard by issue status",
+    "intents": [
+      "show only open compliance issues",
+      "filter compliance by status",
+      "what compliance issues are closed",
+      "show unresolved issues",
+      "filter to open issues"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "status",
+        "type": "string",
+        "optional": false,
+        "description": "One of the three options in the dropdown: All, Open, Closed.",
+        "example": "Open"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.status-filter",
+        "waitFor": "compliance.status-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.status-option",
+        "withinTextParam": "status"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.distribution-chart"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.country-section",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the Status filter.",
+      "Choosing {status}. \"Open\" is this screen's word for what the records call Unresolved — the same thing under two names — and \"All\" clears the filter rather than adding one.",
+      "Everything re-reads against the filter: the total in the doughnut, every card's share, and the counts on each country.",
+      "And the country sections now cover only {status} issues. An empty screen here is a real answer, not a fault — it means nothing in scope has that status. The filter stays on until you set it back to All, including if you walk away and come back."
+    ],
+    "notes": "handleStatusSelect maps the label 'Open' to filters.status = 'Unresolved' and 'All' to null, then refetches. Verified live 2026-07-26: Open took the total from 6 to 2 and the country list from four to two (England and Oman), and the Quality card went from '3 issues' to '1 issue' while its share stayed at 50% — the clearest illustration that the percentage is a share of what is in scope, not a fixed figure."
+  },
+  {
+    "id": "compliance.filter-by-duration",
+    "title": "Filter the compliance dashboard by a duration preset",
+    "intents": [
+      "show compliance issues from the last 30 days",
+      "filter compliance by date range",
+      "compliance issues this week",
+      "last 90 days of compliance issues",
+      "filter the dashboard by duration"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "duration",
+        "type": "string",
+        "optional": false,
+        "description": "One of the presets, written as the dropdown shows it: All, Last 7 Days, Last 30 Days, Last 90 Days. (Custom opens a date-range panel — use the custom-range recipe for that.)",
+        "example": "Last 90 Days"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.duration-filter",
+        "waitFor": "compliance.duration-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.duration-option",
+        "withinTextParam": "duration"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.distribution-chart"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.country-section",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the Duration filter. It offers All, the last 7, 30 or 90 days, and a Custom range.",
+      "Choosing {duration}. The window is counted back from today, and it reads the date the issue was raised.",
+      "The totals now cover only that window, so the doughnut and every card share the same reduced denominator — a category can jump from 20% to 50% without a single new issue, simply because the window shrank.",
+      "And the country sections follow. Expect windows shorter than about six weeks to come back empty on the current data, because the most recent issue was raised in mid-June — an empty dashboard here means \"nothing in that window\", not \"nothing recorded\"."
+    ],
+    "notes": "Presets set filters.duration and refetch. Verified live 2026-07-26 by running the presets: All returned 6 issues across 4 countries; Last 30 Days returned 0 and showed the 'No locations to display' empty state with every card at 0%; Last 90 Days returned 4 and dropped Oman out of the country list entirely, because both of Oman's issues were raised in April and the 90-day window starts 27 April. The newest issue in the dataset is 16 June, so any window shorter than about six weeks is empty. Figures move with the calendar, which is why the prose describes the shape rather than quoting counts."
+  },
+  {
+    "id": "compliance.filter-custom-date-range",
+    "title": "Filter the compliance dashboard by a custom date range",
+    "intents": [
+      "compliance issues between two dates",
+      "custom date range on compliance",
+      "show compliance issues for June",
+      "filter compliance from one date to another",
+      "set a custom compliance date range"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "custom",
+        "type": "string",
+        "optional": false,
+        "description": "Always \"Custom\" for this recipe — it is the dropdown entry that opens the date-range panel.",
+        "example": "Custom"
+      },
+      {
+        "name": "startDate",
+        "type": "string",
+        "optional": false,
+        "description": "Start of the range, as YYYY-MM-DD; it is picked from the calendar, so it has to be a real date the calendar offers. Cannot be later than the end date, and neither date can be in the future.",
+        "example": "2026-06-01"
+      },
+      {
+        "name": "endDate",
+        "type": "string",
+        "optional": false,
+        "description": "End of the range, as YYYY-MM-DD; it is picked from the calendar, so it has to be a real date the calendar offers.",
+        "example": "2026-06-30"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.duration-filter",
+        "waitFor": "compliance.duration-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.duration-option",
+        "withinTextParam": "custom",
+        "waitFor": "compliance.custom-start-date"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.custom-start-date"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.custom-start-date"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.custom-end-date"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.custom-apply"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the Duration filter.",
+      "Choosing Custom, which replaces the preset list with a two-date panel.",
+      "These two boxes are the range. They are calendars rather than text fields — there is nothing to type into them.",
+      "Pick {startDate} as the start yourself. I am handing the dates over rather than setting them: the calendar only ever shows one month at a time, so reaching a date outside it means stepping back through the months, and I cannot do that reliably enough to be trusted with a filter you are about to read numbers off. Nothing later than today can be chosen.",
+      "Then pick {endDate} as the end. This calendar will not offer anything before the start you just chose, so the range cannot come out backwards.",
+      "And press Apply. It stays disabled until both dates are set, so a half-filled range cannot be applied by accident. The Duration button then shows the range itself instead of a preset name, and Reset — inside this same panel — is the only thing that clears it."
+    ],
+    "notes": "The two controls are react-datepicker with a customInput div, and that shapes the whole recipe. react-datepicker does not forward unknown props to a customInput, and with one supplied it renders NO <input> at all, so the ids sit on the custom divs and a `fill` step is impossible — the first draft failed for exactly that reason. A second draft put ids on the day cells via renderDayContents and failed too: the grid shows one month, and a day outside the visible range comes back present-but-disabled, which the player correctly refuses to click. Driving it by date would need month navigation, which a step list cannot express — so the dates are the user's. Verified live to the hand-back."
+  },
+  {
+    "id": "compliance.clear-date-filter",
+    "title": "Clear the compliance dashboard date filter",
+    "intents": [
+      "clear the compliance date filter",
+      "reset the compliance dashboard dates",
+      "show all compliance issues again",
+      "remove the date range",
+      "undo the duration filter"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "custom",
+        "type": "string",
+        "optional": false,
+        "description": "Always \"Custom\" for this recipe — it is the dropdown entry that opens the date-range panel.",
+        "example": "Custom"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.duration-filter",
+        "waitFor": "compliance.duration-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.duration-option",
+        "withinTextParam": "custom"
+      },
+      {
+        "do": "click",
+        "target": "compliance.custom-reset",
+        "waitFor": "compliance.distribution-chart"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.duration-filter"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the Duration filter.",
+      "Going into the Custom panel, because Reset lives inside it — there is no clear button on the preset list, which is the one non-obvious thing about this screen's filters.",
+      "Pressing Reset. It clears both dates and the preset in one go and reloads the dashboard.",
+      "The Duration button is back to saying \"Duration\", so the dashboard is showing everything again. Note that this clears only the dates: a Status filter is separate and stays where it was."
+    ],
+    "notes": "The Reset button sets startDate, endDate and duration to null and refetches. Choosing the 'All' preset achieves the same for the dates; Reset is the only control that also clears a custom range, which is why this recipe goes through the Custom panel."
+  },
+  {
+    "id": "compliance.refresh-dashboard",
+    "title": "Refresh the compliance dashboard",
+    "intents": [
+      "refresh compliance",
+      "reload the compliance dashboard",
+      "get the latest compliance issues",
+      "update the compliance numbers",
+      "is this compliance data current"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.refresh"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "That is the refresh button, and it is worth knowing what it actually does before you press it: it reloads the whole page rather than refetching the figures. Your Status and Duration filters go with it, so you come back to an unfiltered dashboard. If all you want is current numbers under the filters you have set, changing a filter and changing it back costs less. I am leaving the press to you so the reload does not interrupt this walkthrough."
+    ],
+    "notes": "The button is window.location.reload() — a full document reload, not a store refetch. The compliance filters are held in a non-persisted Zustand store, so they are lost. The recipe deliberately stops at a highlight rather than clicking: a reload would tear down the player mid-run."
+  },
+  {
+    "id": "compliance.view-issue-distribution",
+    "title": "Read the issue distribution chart",
+    "intents": [
+      "explain the compliance doughnut",
+      "what is the issue distribution",
+      "how many compliance issues in total",
+      "which category has the most issues",
+      "read the compliance chart"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.distribution-chart"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-card"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "The number in the middle is the total issues in scope, and each arc is one category's share of it. Two things to hold on to: the total obeys the Status and Duration filters, so it is not a lifetime count of everything ever raised; and a category with no issues contributes no arc at all, so a quiet category is invisible here even though it still has a card below.",
+      "The cards are the same figures written out, which is the more reliable way to read a small dataset — with six issues across six categories, two arcs can look like a whole story."
+    ],
+    "notes": "DoughnutChart is fed the same issueCategories/totalIssues as the cards, so the two can never disagree. Verified live: total 6, with Quality and Unclassified at 3 each and the other four categories at zero."
+  },
+  {
+    "id": "compliance.view-category-card",
+    "title": "Inspect one category's issue card",
+    "intents": [
+      "how many quality issues are there",
+      "show me the safety card",
+      "what share of issues is provisioning",
+      "look at one compliance category",
+      "read the delays card"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Category name as it appears on the card, e.g. Quality, Safety, Provisioning, Compliance, Delays, Unclassified.",
+        "example": "Quality"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-card",
+        "withinTextParam": "category"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "This is the {category} card. The large figure is its share of the issues in scope, not a count — the count is the smaller line underneath. The strip along the top and the bar at the bottom both encode that same share, so on a small dataset a category can look alarming at 50% while holding only a handful of issues. Read the count before you act on the colour. The card is a summary only: it does not open anything, and the way through to individual issues is the station tables below."
+    ],
+    "notes": "IssueCard computes percentage = issueCount / totalIssues, so both the card and the strip move when the filters change the denominator. The card is not clickable — only its info icon is."
+  },
+  {
+    "id": "compliance.view-severity-legend",
+    "title": "Show the severity level legend",
+    "intents": [
+      "what do the compliance colours mean",
+      "explain the severity levels",
+      "why is this card orange",
+      "show the compliance legend",
+      "what does level 5 mean"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Which card's info icon to open. Any card shows the same legend.",
+        "example": "Quality"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-card",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "click",
+        "target": "compliance.card-info-icon",
+        "withinTextParam": "category",
+        "waitFor": "compliance.severity-legend"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.severity-legend"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Starting from the {category} card.",
+      "Opening the small info icon in its corner.",
+      "This is the five-level legend: level 1 for 0–10% of the issues, then 11–20, 21–30, 31–50, and level 5 for 51–100%. One caution, because it matters if you are using colour to decide what to look at first: the bands written here do not match the bands the cards are actually coloured by. The colouring steps at 20, 40, 60 and 80 per cent, so a card at 50% comes out yellow — the legend's level 3 — while this legend says 31–50% should be orange. Trust the percentage figure on the card, not the shade, and read this legend as the intended scheme rather than the one in force. Click anywhere outside to close it."
+    ],
+    "notes": "Verified live 2026-07-26 and this is a real defect, not a misreading: LEVEL_DATA in IssueCard.tsx advertises 0-10/11-20/21-30/31-50/51-100, while getColorByPercentage buckets at <=20/<=40/<=60/<=80/else. The Quality card at exactly 50% renders rgb(255,214,0) — the legend's level-3 swatch — where the legend claims level 4's orange. The two disagree for most values above 20%. Filed separately; the prose says so rather than teaching the legend as fact."
+  },
+  {
+    "id": "compliance.expand-country",
+    "title": "Expand a country's station table",
+    "intents": [
+      "expand oman",
+      "show the stations in a country",
+      "open the england section",
+      "which stations have issues in this country",
+      "expand a compliance country"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "country",
+        "type": "string",
+        "optional": false,
+        "description": "Country name as the section header shows it, e.g. Oman, England, Malaysia, Netherlands.",
+        "example": "Oman"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.country-section",
+        "withinTextParam": "country"
+      },
+      {
+        "do": "click",
+        "target": "compliance.country-toggle",
+        "withinTextParam": "country"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.station-table",
+        "withinTextParam": "country"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "This is the {country} section. The header alone tells you a lot: how many stations it covers, and Total, Open and Closed counts for the country.",
+      "Opening it.",
+      "Inside is one row per station, with a column for each category. The columns are built from the category names, so adding or removing a category changes the shape of this table. Pressing the header again folds it away — the table is still there when collapsed, just hidden, so nothing is reloaded when you open it again."
+    ],
+    "notes": "CountryTableSection is a max-height/opacity transition, so the station rows stay mounted while collapsed (they are clipped, not removed). That means a station row can be resolved by a target lookup while invisible to the user, which is why this recipe presses the toggle before pointing at anything inside. Verified live: 4 countries, one station each."
+  },
+  {
+    "id": "compliance.view-station-breakdown",
+    "title": "Read one station's issue breakdown",
+    "intents": [
+      "how many issues at muscat",
+      "show the breakdown for a station",
+      "which categories are failing at this station",
+      "read a station's compliance row",
+      "issues by category for a station"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "country",
+        "type": "string",
+        "optional": false,
+        "description": "Country the station sits in, as the section header shows it.",
+        "example": "Oman"
+      },
+      {
+        "name": "station",
+        "type": "string",
+        "optional": false,
+        "description": "Station as the row shows it — the city name. Add the country if a city name repeats.",
+        "example": "Muscat"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.country-toggle",
+        "withinTextParam": "country"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.station-table",
+        "withinTextParam": "country"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.station-row",
+        "withinTextParam": "station"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening {country}.",
+      "The columns across the top are the categories, in the order the category list defines them.",
+      "And this row is {station}. Read it across to see which categories the issues sit in. These are counts for this station only, so they will not add up to a country total if the country has more than one station, and they answer to whatever Status and Duration filters are set above. The arrow at the end of the row is the way through to the issues themselves."
+    ],
+    "notes": "The table's columns are derived dynamically from the keys of the first station object, so they follow the category list. Station rows are labelled '<city> · <country>' because a city name alone is not guaranteed unique across countries."
+  },
+  {
+    "id": "compliance.open-station-issues",
+    "title": "Open a station's compliance issue list",
+    "intents": [
+      "show me the issues at muscat",
+      "open the compliance issues for a station",
+      "drill into a station's issues",
+      "list the issues at this station",
+      "see the actual compliance issues"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "country",
+        "type": "string",
+        "optional": false,
+        "description": "Country the station sits in.",
+        "example": "Oman"
+      },
+      {
+        "name": "station",
+        "type": "string",
+        "optional": false,
+        "description": "Station as the row shows it — the city name.",
+        "example": "Muscat"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.country-toggle",
+        "withinTextParam": "country"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.station-row",
+        "withinTextParam": "station"
+      },
+      {
+        "do": "click",
+        "target": "compliance.station-open",
+        "withinTextParam": "station"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening {country}.",
+      "This is the {station} row — check the counts here against what you expect before following it through.",
+      "Following the arrow to {station}'s own issue list. This is a different screen: it lists the individual issues for that station, where this dashboard only ever showed you counts. The dashboard's Status and Duration filters do not travel with you, so what you see there may be a wider set than the numbers you just read."
+    ],
+    "notes": "The arrow navigates to /compliance/compliance-tracking/<station.id>. The dashboard filters live in the compliance store and are not applied by the tracking screen, so the two can legitimately disagree — worth saying rather than letting the user assume continuity."
+  },
+  {
+    "id": "compliance.open-category-manager",
+    "title": "Open the compliance category manager",
+    "intents": [
+      "manage compliance categories",
+      "open the category list",
+      "where do I add a compliance category",
+      "edit the compliance categories",
+      "show the category manager"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-menu",
+        "waitFor": "compliance.settings-categories"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-categories",
+        "waitFor": "compliance.categories-modal"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.categories-modal"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "The gear button next to New Issue is where the category list hides.",
+      "Choosing Categories.",
+      "This is the category manager, and it is a working surface rather than a display: every row can be renamed, switched active or inactive, or deleted, and there is a box at the bottom for adding one. Two things follow from changing anything here. The cards and the station-table columns on the dashboard are built from this list, so the dashboard's shape changes with it. And closing this panel refetches the dashboard, which is why the figures behind it may shift as it closes."
+    ],
+    "notes": "CategoryListModal. Closing it calls fetchDashboardStats(), so category edits are reflected without a page reload. The dashboard hides categories that have been soft-deleted, so the card grid and this list can differ in length."
+  },
+  {
+    "id": "compliance.tour-dashboard",
+    "title": "Guided tour of the Compliance Monitoring dashboard",
+    "intents": [
+      "walk me through compliance",
+      "explain the compliance dashboard",
+      "I am new to compliance monitoring",
+      "give me a tour of compliance",
+      "how do I read this compliance screen"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.distribution-chart"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-card"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.status-filter"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.duration-filter"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.country-section"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.new-issue",
+        "optional": true
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.settings-menu"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "This screen answers one question — where are our compliance problems — and it answers it three times over, at increasing detail. Let me take you down it.",
+      "Level one: the total, and how it splits by category.",
+      "Level two: a card per category, with its share and its count. The colour is a rough heat signal; the count is the fact.",
+      "Everything you are about to read obeys these two filters. Status is All, Open or Closed, where Open is the same thing the records call Unresolved.",
+      "Duration is All, the last 7, 30 or 90 days, or a custom range. Both filters persist while you stay on the screen, so a figure that looks wrong is usually a filter you forgot.",
+      "Level three: one section per country, opening into a row per station and a column per category. The arrow at the end of a station row leaves this dashboard for that station's actual list of issues.",
+      "New Issue is how a problem gets onto this screen in the first place. It needs the compliance create permission, so it is not there for everyone.",
+      "And the gear holds the category list — the thing that decides what the cards and the table columns are. That is the whole screen: a total, a split, and a route down to the individual issue."
+    ],
+    "notes": "Read-only tour. The New Issue highlight is optional because the button is wrapped in <Can permission=\"compliance:create\">, so it genuinely is absent for read-only users — and the prose on that step says what it is for rather than assuming it is visible."
+  },
+  {
+    "id": "compliance.create-issue",
+    "title": "Log a new compliance issue",
+    "intents": [
+      "log a compliance issue",
+      "raise a new compliance issue",
+      "report a quality problem at a station",
+      "create a compliance issue",
+      "add an issue to compliance"
+    ],
+    "requiredPermission": "compliance:create",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Category to file the issue under, as named in the dropdown. Required.",
+        "example": "Quality"
+      },
+      {
+        "name": "station",
+        "type": "string",
+        "optional": false,
+        "description": "Text to search the station list for — a city or airport code.",
+        "example": "Muscat"
+      },
+      {
+        "name": "stationOption",
+        "type": "string",
+        "optional": false,
+        "description": "The station to pick from the dropdown, written as it appears: City (CODE).",
+        "example": "Muscat (MCT)"
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "optional": false,
+        "description": "Short subject line. Required — it is what identifies the issue in every list.",
+        "example": "ZZ Test issue (safe to delete)"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "optional": true,
+        "description": "Fuller description of what happened.",
+        "example": "Raised while testing the Zoe walkthrough."
+      },
+      {
+        "name": "director",
+        "type": "string",
+        "optional": true,
+        "description": "Flight director's name, if the issue came from a flight.",
+        "example": "A. Walsh"
+      },
+      {
+        "name": "remarks",
+        "type": "string",
+        "optional": true,
+        "description": "Any remarks to add alongside the description.",
+        "example": "No further action needed."
+      },
+      {
+        "name": "reason",
+        "type": "string",
+        "optional": true,
+        "description": "Reason, if one is known.",
+        "example": "Supplier substitution"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.new-issue",
+        "waitFor": "compliance.add-issue.dialog"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.category",
+        "waitFor": "compliance.add-issue.category-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.category-option",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.station-search",
+        "param": "station"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.station-option",
+        "withinTextParam": "stationOption",
+        "param": "stationOption"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.subject",
+        "param": "subject"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.description",
+        "param": "description"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.director",
+        "param": "director"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.remarks",
+        "param": "remarks"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.reason",
+        "param": "reason"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.add-issue.submit"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the New Issue form. If this button is not on your dashboard, your role does not include creating compliance issues — reading them and raising them are separate permissions.",
+      "Opening the Category picker.",
+      "Filing it under {category}. Required, and it decides which card and which table column this issue lands in.",
+      "Searching the station list for \"{station}\".",
+      "Choosing {stationOption}. Only clicking an entry sets the station — text typed and left alone counts for nothing, and the station is required.",
+      "Setting the subject to \"{subject}\". Required, and it is the line every list shows, so write it so someone else can recognise the issue a month from now.",
+      "Adding the description: {description}.",
+      "Recording the flight director as {director}.",
+      "Adding remarks: {remarks}.",
+      "And the reason: {reason}.",
+      "That is the form filled — press Submit to raise it. Three things are worth knowing before you do. It arrives Unresolved, so it lands in the Open count immediately. There is no draft: Submit creates it, and this screen has no way to delete an issue afterwards — closing it out happens on the station's own tracking screen. And the flight and date fields are optional here, so an issue can be raised without one, which is the right thing for something like a warehouse finding but means the record carries no flight context."
+    ],
+    "notes": "Required by the form's zod schema: categoryId, stationCode and subject. The station field is a debounced typeahead over destinations and its hidden input is what the form actually reads, so only selectStation sets it. status defaults to 'Unresolved' server-side. Verified live end to end and confirmed in compliance_tracking; the test row was removed afterwards. Category is a CustomSelect — a trigger and a list rather than a native select — so it is driven by clicking the trigger and then the option, not by filling it."
+  },
+  {
+    "id": "compliance.create-issue-for-flight",
+    "title": "Log a compliance issue against a specific flight",
+    "intents": [
+      "log a compliance issue for a flight",
+      "raise an issue against WY101",
+      "report a problem on a flight",
+      "create a compliance issue for a flight number",
+      "log an issue with the flight details"
+    ],
+    "requiredPermission": "compliance:create",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Category to file the issue under.",
+        "example": "Quality"
+      },
+      {
+        "name": "station",
+        "type": "string",
+        "optional": false,
+        "description": "Text to search the station list for.",
+        "example": "Muscat"
+      },
+      {
+        "name": "stationOption",
+        "type": "string",
+        "optional": false,
+        "description": "The station to pick, written as City (CODE).",
+        "example": "Muscat (MCT)"
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "optional": false,
+        "description": "Short subject line. Required.",
+        "example": "ZZ Test flight issue (safe to delete)"
+      },
+      {
+        "name": "flight",
+        "type": "string",
+        "optional": false,
+        "description": "The flight to pick from the search results, as it appears there — flight identifier and date.",
+        "example": "WY101"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.new-issue",
+        "waitFor": "compliance.add-issue.dialog"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.flight-picker",
+        "waitFor": "compliance.add-issue.flight-result"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.flight-result",
+        "withinTextParam": "flight"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.flight-confirm",
+        "waitFor": "compliance.add-issue.dialog"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.category",
+        "waitFor": "compliance.add-issue.category-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.category-option",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.station-search",
+        "param": "station"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.station-option",
+        "withinTextParam": "stationOption"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.subject",
+        "param": "subject"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.add-issue.submit"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the New Issue form.",
+      "The Flight field is not a text box — it opens a search over real flights, so the issue is tied to a flight that exists rather than to a number somebody typed.",
+      "Choosing {flight}.",
+      "Confirming the selection. This fills in both the flight number and its departure date, so the date field looks after itself.",
+      "Opening the Category picker.",
+      "Filing the issue under {category}.",
+      "Searching for the station.",
+      "Choosing {stationOption}. The station is separate from the flight and is required in its own right — it is where the issue is being recorded, which is not always where the flight went.",
+      "Setting the subject to \"{subject}\".",
+      "Press Submit to raise it. Attaching a flight is what lets this issue be read alongside that flight's own history later, so it is worth doing when the problem really came from a flight — and worth leaving off when it did not."
+    ],
+    "notes": "The flight picker is the shared FlightSearchModal, given a zoePrefix so its result rows and confirm button carry ids for this screen only. Selecting a flight sets flightNumber and date via onSelectFlight. Result rows are labelled '<designator><number> · <date>'. Category is a CustomSelect — a trigger and a list rather than a native select — so it is driven by clicking the trigger and then the option, not by filling it."
+  },
+  {
+    "id": "compliance.attach-issue-images",
+    "title": "Attach photos to a new compliance issue",
+    "intents": [
+      "attach a photo to a compliance issue",
+      "add pictures to an issue",
+      "upload evidence for a compliance issue",
+      "put images on a compliance report",
+      "photograph a compliance problem"
+    ],
+    "requiredPermission": "compliance:create",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Category to file the issue under.",
+        "example": "Quality"
+      },
+      {
+        "name": "station",
+        "type": "string",
+        "optional": false,
+        "description": "Text to search the station list for.",
+        "example": "Muscat"
+      },
+      {
+        "name": "stationOption",
+        "type": "string",
+        "optional": false,
+        "description": "The station to pick, written as City (CODE).",
+        "example": "Muscat (MCT)"
+      },
+      {
+        "name": "subject",
+        "type": "string",
+        "optional": false,
+        "description": "Short subject line. Required.",
+        "example": "ZZ Test issue with photo (safe to delete)"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.new-issue",
+        "waitFor": "compliance.add-issue.dialog"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.category",
+        "waitFor": "compliance.add-issue.category-option"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.category-option",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.station-search",
+        "param": "station"
+      },
+      {
+        "do": "click",
+        "target": "compliance.add-issue.station-option",
+        "withinTextParam": "stationOption"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.add-issue.subject",
+        "param": "subject"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.add-issue.image-area"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.add-issue.image-slot"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.add-issue.submit"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the New Issue form.",
+      "Opening the Category picker.",
+      "Filing it under {category}.",
+      "Searching for the station.",
+      "Choosing {stationOption}.",
+      "Setting the subject to \"{subject}\".",
+      "These five squares are the photo slots — JPG, PNG or WEBP, up to five images.",
+      "Click a slot and choose the file yourself. I cannot do this part: the file chooser belongs to your computer rather than to this screen, and if I clicked here the walkthrough would stop with the chooser sitting open. The slot fills with a thumbnail so you can see what you attached, and the small bin under a filled slot removes it — before you submit, that is the only chance to change your mind.",
+      "Then press Submit to raise the issue with its photos. Photographs are usually the part of a compliance record that settles an argument later, so it is worth attaching them now rather than describing what you saw."
+    ],
+    "notes": "Five slots via the shared ImageSlot component, given an opt-in slotZoeId here; each slot is labelled 'slot 1'…'slot 5'. accept is image/*, and the wording on screen says JPG, PNG, WEBP. The hand-back is deliberate: a click on the slot opens the OS file chooser, which no walkthrough can drive. Category is a CustomSelect — a trigger and a list rather than a native select — so it is driven by clicking the trigger and then the option, not by filling it."
+  },
+  {
+    "id": "compliance.create-category",
+    "title": "Create a compliance issue category",
+    "intents": [
+      "add a compliance category",
+      "create a new issue category",
+      "we need a category for hygiene",
+      "add a category to compliance",
+      "new compliance category"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "write",
+    "params": [
+      {
+        "name": "name",
+        "type": "string",
+        "optional": false,
+        "description": "Name for the new category, up to 100 characters. It appears as a dashboard card and as a column in every station table.",
+        "example": "ZZ Test Category"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-menu",
+        "waitFor": "compliance.settings-categories"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-categories",
+        "waitFor": "compliance.categories-modal"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.category-new-name",
+        "param": "name"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.category-add"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the gear menu.",
+      "Choosing Categories.",
+      "Typing \"{name}\" into the box at the bottom of the list.",
+      "Press the plus to create it. Know what this changes before you do: a category is not just a label on this list — it becomes a card on the dashboard and a column in every country's station table, so the screen gets wider for everyone. It arrives active and empty, showing 0%. Two things about the name are worth knowing. If an ACTIVE category already has it, the server refuses and tells you so. If a DEACTIVATED one has it, this does not create a second category at all — it revives the original, with every issue that was ever filed under it. That is the supported way to undo a deactivation, so type the name exactly if that is what you are trying to do."
+    ],
+    "notes": "handleAdd posts the name; the list refreshes in place and closing the modal refetches the dashboard. Per compliance-tracking.ts createCategory: a matching ACTIVE name is a conflict error, while a matching INACTIVE name is reactivated rather than duplicated — which is the only route back from a deactivation, since the manager lists only active categories. Verified live and confirmed in compliance_categories; the test categories were removed afterwards."
+  },
+  {
+    "id": "compliance.rename-category",
+    "title": "Rename a compliance issue category",
+    "intents": [
+      "rename a compliance category",
+      "change a category name",
+      "fix the spelling of a category",
+      "rename quality to something else",
+      "edit a compliance category name"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "The category to rename, as it appears in the list.",
+        "example": "ZZ Test Category"
+      },
+      {
+        "name": "newName",
+        "type": "string",
+        "optional": false,
+        "description": "The new name.",
+        "example": "ZZ Test Category Renamed"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-menu",
+        "waitFor": "compliance.settings-categories"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-categories",
+        "waitFor": "compliance.categories-modal"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-row",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "click",
+        "target": "compliance.category-edit",
+        "withinTextParam": "category",
+        "waitFor": "compliance.category-name-input"
+      },
+      {
+        "do": "fill",
+        "target": "compliance.category-name-input",
+        "param": "newName"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.category-save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the gear menu.",
+      "Choosing Categories.",
+      "This is the {category} row.",
+      "Pressing the pencil turns the name into an editable box.",
+      "Changing it to \"{newName}\".",
+      "Press the tick to save it. A rename carries everywhere at once — the card, the doughnut and the station-table column all read from this one name — and every issue already filed under it comes along, because they are attached to the category rather than to its name. Escape abandons the edit, and the tick stays disabled while the box is empty."
+    ],
+    "notes": "Inline edit with Enter to save and Escape to cancel, plus tick and cross buttons. The row label is the ORIGINAL name, so a recipe naming the row still resolves after the input opens. Issues reference category_id, so no issue is orphaned by a rename."
+  },
+  {
+    "id": "compliance.toggle-category-active",
+    "title": "Activate or deactivate a compliance category",
+    "intents": [
+      "deactivate a compliance category",
+      "stop using a category",
+      "turn a category back on",
+      "hide a compliance category",
+      "make a category inactive"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "The category whose switch to flip, as it appears in the list.",
+        "example": "ZZ Test Category"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-menu",
+        "waitFor": "compliance.settings-categories"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-categories",
+        "waitFor": "compliance.categories-modal"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-row",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.category-active-toggle",
+        "withinTextParam": "category"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the gear menu.",
+      "Choosing Categories.",
+      "This is the {category} row, and the small switch on it carries the category's current state — filled and to the right means active.",
+      "Flip it yourself, and know what deactivating does before you press, because it is not symmetrical. The category stops being offered for new issues and every issue already filed under it keeps its history — nothing is lost. But the list you are looking at only shows active categories, so the moment you deactivate one it disappears from this panel and there is no switch left to press. The way back is to type its name into the box at the bottom and press the plus: creating a category whose name matches a deactivated one revives that same category, with its issues still attached, rather than making a second one. I am leaving the press to you because the switch toggles rather than sets, so one click flips whatever is there."
+    ],
+    "notes": "Verified live 2026-07-26, and this corrected the recipe: after deactivating, the category was GONE from the manager, because getCategories() filters on isActive = true. So the toggle is one-way through this screen. The documented way back is createCategory, which reactivates an existing inactive row of the same name instead of inserting a duplicate (compliance-tracking.ts). The switch is a role=switch button carrying aria-checked, handed over rather than clicked because a click flips whatever state it is in."
+  },
+  {
+    "id": "compliance.delete-category",
+    "title": "Delete an unused compliance category",
+    "intents": [
+      "delete a compliance category",
+      "remove a category we never use",
+      "get rid of an empty category",
+      "delete an unused issue category",
+      "remove a compliance category"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "The category to delete, as it appears in the list.",
+        "example": "ZZ Test Category"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-menu",
+        "waitFor": "compliance.settings-categories"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-categories",
+        "waitFor": "compliance.categories-modal"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-row",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "click",
+        "target": "compliance.category-delete",
+        "withinTextParam": "category",
+        "waitFor": "compliance.category-delete-confirm"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.category-delete-confirm"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the gear menu.",
+      "Choosing Categories.",
+      "This is the {category} row.",
+      "Pressing the bin asks for confirmation rather than deleting.",
+      "Press Delete to confirm, and read what \"delete\" means here first, because it is gentler than it sounds. If any compliance issue is filed under {category}, the deletion is refused and a second dialog opens asking which category to move those issues into — nothing is lost either way. If it is genuinely unused, it is marked inactive rather than erased: it vanishes from this list, from the dashboard cards and from the station-table columns, but the record survives, and typing the same name into the box at the bottom later revives it. So this is reversible if you know the name, and invisible if you do not."
+    ],
+    "notes": "Two-step by design: PromptModal confirms, then deleteCategory may answer 'in-use', which opens the reassign dialog rather than failing — so this path cannot destroy issue history. Verified in the repository source: 'delete' is a SOFT delete (isActive = false), not a row removal, and getCategories() returns only active rows, which is why the category simply disappears. Verified live on a throwaway category with no issues."
+  },
+  {
+    "id": "compliance.reassign-and-delete-category",
+    "title": "Migrate a category's issues and delete it",
+    "intents": [
+      "delete a category and move its issues",
+      "merge one compliance category into another",
+      "reassign issues to another category",
+      "delete a category that is in use",
+      "move issues out of a category then delete it"
+    ],
+    "requiredPermission": "compliance:read",
+    "risk": "write",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "The category to delete, as it appears in the list. It has issues filed under it, which is what makes this the reassigning path.",
+        "example": "ZZ Test Category"
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "optional": false,
+        "description": "The category to move the issues into, as named in the second dialog's dropdown.",
+        "example": "Unclassified"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.compliance",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.compliance",
+        "waitFor": "compliance.dashboard-root"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-menu",
+        "waitFor": "compliance.settings-categories"
+      },
+      {
+        "do": "click",
+        "target": "compliance.settings-categories",
+        "waitFor": "compliance.categories-modal"
+      },
+      {
+        "do": "highlight",
+        "target": "compliance.category-row",
+        "withinTextParam": "category"
+      },
+      {
+        "do": "click",
+        "target": "compliance.category-delete",
+        "withinTextParam": "category",
+        "waitFor": "compliance.category-delete-confirm"
+      },
+      {
+        "do": "click",
+        "target": "compliance.category-delete-confirm",
+        "waitFor": "compliance.category-reassign-target",
+        "timeoutMs": 12000
+      },
+      {
+        "do": "fill",
+        "target": "compliance.category-reassign-target",
+        "param": "target"
+      },
+      {
+        "do": "handback",
+        "target": "compliance.category-reassign-confirm"
+      }
+    ],
+    "prose": [
+      "I'll highlight Compliance Monitoring in the sidebar.",
+      "Opening the compliance dashboard.",
+      "Opening the gear menu.",
+      "Choosing Categories.",
+      "This is the {category} row — the one with issues filed under it.",
+      "Pressing the bin.",
+      "Confirming the delete. Because issues are attached to this category, the delete is refused and this second dialog opens instead. That refusal is the safety net: there is no path through this screen that deletes issue history.",
+      "Choosing {target} as the category to move them into. If no other category exists the dialog says so and stops — you would need to create one first.",
+      "Press Reassign & delete to finish. Every issue currently filed under {category} is re-filed under {target} in a single transaction, and only then is {category} retired. Two things to be clear about: the move itself is not reversible from here — afterwards nothing records that those issues were ever anything else, so choose a target that will still make sense to whoever reads them next — while the category is only marked inactive, so its name is still taken and re-creating it would revive an empty version of it. The dashboard's cards and columns change to match as the panel closes."
+    ],
+    "notes": "handleReassignDelete calls deleteCategory(id, targetId) and reports the reassignedCount. The dropdown lists every category except the one being deleted. The confirm step carries a longer timeout because the server has to answer 'in-use' before the second dialog can render. Verified live end to end: a throwaway category holding one test issue was migrated into Unclassified and deleted, and the issue's category_id was confirmed changed in the database."
+  }
+]

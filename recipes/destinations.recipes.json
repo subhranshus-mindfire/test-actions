@@ -1,0 +1,1573 @@
+[
+  {
+    "id": "destinations.browse-list",
+    "title": "Browse the destination list",
+    "intents": [
+      "show me the destinations",
+      "open the airport setup",
+      "how many airports do we have",
+      "list our destinations",
+      "go to destination setup",
+      "what airports are configured"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destinations.search"
+      },
+      {
+        "do": "highlight",
+        "target": "destinations.list"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.page"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "This is the airport register — every station the airline and its caterers work through. The count beside the heading is the whole register; the list itself loads fifty at a time as you scroll.",
+      "Search narrows the list by code, city or country.",
+      "The list is the left half of a master-and-detail screen: choose a row here and its record fills the right.",
+      "And the screen never opens empty — it selects the first airport for you, so what you are reading on the right is that first record rather than anything you chose. Worth knowing before you act on it, and it is why Edit is available the moment the page loads."
+    ],
+    "notes": "Route /setup/destinations, gated setup:destinations:read. Measured 2026-07-26: 161 destinations, 50 per page, scroll-triggered pagination. The first row is auto-selected on load. Two dead controls to be aware of: the funnel button beside the search has no onClick at all, and there is NO delete capability anywhere in this module — canDelete is commented out and the confirm handler only raises a 'not implemented' toast, so no delete recipe exists for it."
+  },
+  {
+    "id": "destinations.search-destination",
+    "title": "Search for an airport",
+    "intents": [
+      "find muscat in destinations",
+      "search for an airport",
+      "look up MCT",
+      "which destinations are in oman",
+      "search the airport list"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "query",
+        "type": "string",
+        "optional": false,
+        "description": "Text to match — an airport code, a city or a country.",
+        "example": "Muscat"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "query"
+      },
+      {
+        "do": "highlight",
+        "target": "destinations.list"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Searching for \"{query}\". The search goes to the server and replaces the list rather than filtering what is already loaded, so a match hundreds of rows down is still found.",
+      "These are the matches. Selecting one loads its record on the right; the airport that was showing before stays there until you do, so the two halves can briefly disagree. If nothing matches, the list says so — and note the funnel button beside the search box does nothing at all, so text is the only way to narrow this list."
+    ],
+    "notes": "handleSearchChange writes straight into the store filters and refetches from page 1. The funnel button at the right of the search box has no onClick — verified in the source, and worth saying rather than letting a user hunt for a filter panel."
+  },
+  {
+    "id": "destinations.reset-search",
+    "title": "Clear the destination search",
+    "intents": [
+      "clear the destination search",
+      "show all airports again",
+      "reset the destination list",
+      "undo my airport search",
+      "show all destinations"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.show-all",
+        "waitFor": "destinations.row"
+      },
+      {
+        "do": "highlight",
+        "target": "destinations.list"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Pressing Show All. It empties the search box and refetches the register from the first page.",
+      "The whole list is back, and the count beside the heading matches it again. The airport selected on the right is untouched — clearing the search changes what you can choose from, not what you are looking at."
+    ],
+    "notes": "Show All clears searchQuery, clears the store filter and calls fetchAvailableDestinations(1). It does not clear the selected destination."
+  },
+  {
+    "id": "destinations.load-more",
+    "title": "Load more destinations",
+    "intents": [
+      "load more airports",
+      "show me more destinations",
+      "why can I only see fifty airports",
+      "scroll the destination list",
+      "get the rest of the destinations"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destinations.list"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "The list holds fifty airports at a time out of the full count shown beside the heading, and there is no More button — the next page is fetched when you scroll to within a few pixels of the bottom, so keep scrolling and the rest arrive. Scrolling is yours to do: I can highlight the list but I cannot scroll it for you in a way you would be able to follow. If you are looking for one particular airport, the search box is the shorter route, because it queries the whole register rather than the part you have loaded."
+    ],
+    "notes": "handleScroll fetches the next page at 10px from the bottom. There is no explicit pagination control, which is why this recipe explains the mechanic rather than performing it — a programmatic scroll would load rows the user never saw move."
+  },
+  {
+    "id": "destinations.open-destination",
+    "title": "Open an airport record",
+    "intents": [
+      "open muscat",
+      "show me the MCT record",
+      "look at an airport's setup",
+      "open a destination record",
+      "what is configured for this airport"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.status-bar"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.airport-card"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Narrowing the list to {destination} first — the register runs to a few hundred rows and the one you want is rarely on screen.",
+      "Selecting it.",
+      "The status bar at the top is the summary that matters operationally: whether the airport is active at all, and whether it is active for catering.",
+      "And this card is its identity — code, type, name and sector. A dash means the field was never filled in, which is common here: most airports in this register have no type and no sector recorded."
+    ],
+    "notes": "Rows are labelled '<city> (<code>) · <country>'. A city can be blank in this data — AER has none — so the label can legitimately begin with the bracketed code. Codes are the reliable part. The search box matches code, city or country as separate fields — verified live: 'MCT' and 'Muscat' each return the one row, 'Oman' returns six, and the composite 'Muscat (MCT)' returns NONE. So the param has to be plain searchable text; the row label is what the click matches against, and it contains the code."
+  },
+  {
+    "id": "destinations.view-airport-details",
+    "title": "Review an airport's details",
+    "intents": [
+      "what is this airport's code",
+      "review an airport's details",
+      "is this a domestic or international airport",
+      "what sector is this airport in",
+      "show me the airport details"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.airport-card"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "Four fields, and they are not equally reliable. The airport code is the one everything else in the system joins on — flights, contracts, stock and compliance all reach this airport through it, so it is the field to trust. Airport Type and Sector are descriptive and mostly unset in this register: a dash means nobody has recorded one, not that the airport is unclassified in reality. Airport Name is the full name for paperwork. To change any of them, use Edit at the top of the screen."
+    ],
+    "notes": "Measured 2026-07-26: of 161 destinations only 4 carry an airport type and only 1 a real sector, so the dashes are the normal case. The code is the join key used across flights, contracts, inventory and compliance."
+  },
+  {
+    "id": "destinations.view-location-details",
+    "title": "Check an airport's local time, timezone and cutoff",
+    "intents": [
+      "what time is it at this airport",
+      "what is the timezone for MCT",
+      "what is the order cutoff at this airport",
+      "check an airport's local time",
+      "where is this airport"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.location-card"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "This card carries the two figures that actually drive planning. Time Zone is stored as a plain offset from UTC, like +04:00 — it is text rather than a named zone, so nothing here follows a daylight-saving change on its own; if a country moves its clocks, somebody has to edit this field. Time Current is that offset applied to now, which is why it agrees with the field rather than proving it. Cutoff Time is the number of hours before departure after which orders for this airport close, and it is the field most likely to be wrong quietly: every airport in this register defaults to the same figure, so a station with a genuinely longer lead time will look normal until an order is refused. Address, City, Province and Country are the postal detail, dashes where nothing was entered."
+    ],
+    "notes": "timezone is varchar and holds offsets such as '+04:00'; the displayed current time is computed from it, so the two can never disagree and the display is not evidence the offset is right. cutoff_hour defaults to 2 in the database and 4 in the create form's initial state — a created airport therefore starts at 4 while every seeded one reads 2."
+  },
+  {
+    "id": "destinations.check-status",
+    "title": "Check whether an airport is active for catering",
+    "intents": [
+      "is this airport active",
+      "can we cater at this airport",
+      "check an airport's catering status",
+      "is MCT open for catering",
+      "what is this destination's status"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.status-bar"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "Two separate switches, and the difference matters. Status is whether the airport is in use at all. Catering is whether we cater there — an airport can be perfectly active as a destination while catering is off, which is the normal shape for a station somebody else provisions. Both read Active in green or fall back to Inactive, and both are changed from the same Edit form. Every airport in this register is currently Active on both counts, so a green pair here is the default rather than a decision anyone has recorded."
+    ],
+    "notes": "cateringStatus and status are separate varchar columns, both defaulting to 'Active'; the detail shows green for exactly the string 'Active' and the Inactive wording for anything else, including null. Measured 2026-07-26: all 161 destinations are Active/Active."
+  },
+  {
+    "id": "destinations.view-on-map",
+    "title": "See an airport on the map",
+    "intents": [
+      "show me this airport on a map",
+      "where is this airport",
+      "open the map for MCT",
+      "map this destination",
+      "view the airport location"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.view-map",
+        "waitFor": "destination-map.dialog"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-map.dialog"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "Pressing View on Map.",
+      "This is a map search rather than a stored position: the airport's name, city and country are handed to the map provider as a query, so what you are looking at is that provider's best guess. For a well-known airport it lands on the terminal; for a sparse record — no name, or only a code — it can land on the city centre or somewhere else entirely. Treat it as a sanity check on the address rather than as coordinates we hold. Close it and nothing about the record has changed."
+    ],
+    "notes": "DestinationMapModal embeds a provider search URL built from `${name || code}, ${city}, ${country}` via mapService.getEmbedUrl. No latitude or longitude is stored on a destination, so the pin is only ever as good as those text fields."
+  },
+  {
+    "id": "destinations.view-contracts",
+    "title": "See which caterers hold contracts at an airport",
+    "intents": [
+      "who caters at muscat",
+      "which caterers work at this airport",
+      "show the contracts for this destination",
+      "do we have a caterer at MCT",
+      "list the contracts at an airport"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.tab-contracts",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.contract-row",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "The Contracts tab, with the number of them in the heading. This list is fetched live for this airport rather than being part of the record, so it reflects the contract register as it stands now.",
+      "Each row is one contract held at this airport, and the arrow on it opens that contract. An empty list with a count of zero means no caterer is contracted here — which for most airports in this register is the honest state, so read it as \"none recorded\" rather than as a loading failure. Contracts are created and edited in the Contracts screen, not here; this tab is a read-only view onto them."
+    ],
+    "notes": "fetchDestinationContracts is called with the destination's station code on mount and on change. Measured 2026-07-26: Muscat holds 4 contracts (HQ Canteen 1, IFCS test contract, Oman Air, Test) and most other airports hold none, so the empty state is the common case. The row highlight is optional for exactly that reason."
+  },
+  {
+    "id": "destinations.open-contract",
+    "title": "Open a caterer's contract from the airport record",
+    "intents": [
+      "open the oman air contract at muscat",
+      "show me that caterer's contract",
+      "open a contract from the airport",
+      "go to the contract for this caterer",
+      "see the contract details"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      },
+      {
+        "name": "contract",
+        "type": "string",
+        "optional": false,
+        "description": "Contract name as the row shows it.",
+        "example": "Oman Air"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.tab-contracts",
+        "waitFor": "destination-detail.contract-row"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.contract-row",
+        "withinTextParam": "contract"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.contract-row",
+        "withinTextParam": "contract"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "Switching to the Contracts tab.",
+      "This is {contract}. Contract names repeat across airports in this register — several stations hold a contract with the same name — so what makes this one the right one is that you reached it from {destination}.",
+      "Opening it. This leaves the airport register for the Contracts screen, with that contract selected. Nothing about the airport was changed, and coming back means navigating back to Destinations — the airport you had selected will not still be selected when you do."
+    ],
+    "notes": "Each row navigates to /contracts?contractId=<id>. Contract names are not unique across destinations (Oman Air -CMB, Oman Air -BKK and so on), which is why the recipe reaches them through the airport rather than by name alone."
+  },
+  {
+    "id": "destinations.view-storage-locations",
+    "title": "Check an airport's storage locations",
+    "intents": [
+      "what storage locations does this airport have",
+      "show the storage for this destination",
+      "where is stock stored at this airport",
+      "check an airport's storage locations",
+      "open the storage location tab"
+    ],
+    "requiredPermission": "setup:destinations:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.tab-storage",
+        "waitFor": "destination-detail.no-locations"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.no-locations"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "Switching to the Storage Location tab.",
+      "This tab reads \"no locations\" for every airport, and it will keep reading that however much stock the station holds — nothing is fetched into it. It is an unfinished part of the screen rather than a statement about {destination}. The storage locations that stock actually sits in are the ones in Inventory, where an item's warehouse locations are recorded per station; if that is what you were looking for, that is where to look."
+    ],
+    "notes": "The storage tab renders a hard-coded empty state — no fetch exists behind it. Verified by reading DestinationDetails: the branch has no data source at all. Said plainly in the prose because a user comparing this against Inventory's warehouse locations would otherwise conclude the station has none."
+  },
+  {
+    "id": "destinations.add-storage-location",
+    "title": "Add a storage location to an airport",
+    "intents": [
+      "add a storage location",
+      "create a warehouse location for this airport",
+      "set up storage at this destination",
+      "add a new location to an airport",
+      "record a storage location"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "MCT"
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "optional": false,
+        "description": "Short code for the location.",
+        "example": "ZZ-DRY-01"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.tab-storage",
+        "waitFor": "destination-detail.add-location"
+      },
+      {
+        "do": "click",
+        "target": "destination-detail.add-location",
+        "waitFor": "location-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "location-form.code",
+        "param": "code"
+      },
+      {
+        "do": "handback",
+        "target": "location-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Opening its record.",
+      "Switching to the Storage Location tab, which is where the New Location button lives.",
+      "Opening the form.",
+      "Setting the code to {code}.",
+      "Stop before you press Save, because this button does not do what it appears to. Saving here raises a success message and nothing else: no location is created, nothing is sent to the server, and the tab behind will still read \"no locations\" afterwards. This part of the screen is unfinished. If you need a storage location that stock can actually be held in, it has to be set up in Inventory rather than here. I am handing over rather than pressing so that the success message is not mistaken for a result."
+    ],
+    "notes": "This is a UI-only stub and the recipe says so outright. LocationFormModal's Save calls onSave, and the handler in DestinationSetup only fires a success toast — there is no service call and no persistence. Verified live: after saving, the storage tab still rendered its empty state and nothing was written. The recipe exists because the workflow is user-visible and a user needs to be told the truth about it, not because it works. Confirmed live: after pressing Save the dialog closed with a success message and the Storage Location tab behind it still rendered its empty state — nothing was created."
+  },
+  {
+    "id": "destinations.create-destination",
+    "title": "Add a new airport",
+    "intents": [
+      "add a new airport",
+      "create a destination",
+      "we fly to a new station now",
+      "register an airport",
+      "add a station to the system"
+    ],
+    "requiredPermission": "setup:destinations:create",
+    "risk": "write",
+    "params": [
+      {
+        "name": "code",
+        "type": "string",
+        "optional": false,
+        "description": "Airport code. Required, and it is what every other part of the system joins on, so it has to be right.",
+        "example": "ZZT"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": false,
+        "description": "Full airport name. Required.",
+        "example": "ZZ Test Airport (safe to delete)"
+      },
+      {
+        "name": "city",
+        "type": "string",
+        "optional": false,
+        "description": "City. Required.",
+        "example": "ZZ Test City"
+      },
+      {
+        "name": "country",
+        "type": "string",
+        "optional": false,
+        "description": "Country. Required.",
+        "example": "Testland"
+      },
+      {
+        "name": "timezone",
+        "type": "string",
+        "optional": true,
+        "description": "UTC offset as text, in the form the register uses.",
+        "example": "+04:00"
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "optional": true,
+        "description": "Domestic or International. Defaults to International.",
+        "example": "International"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.add",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.code",
+        "param": "code"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.name",
+        "param": "name"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.city",
+        "param": "city"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.country",
+        "param": "country"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.timezone",
+        "param": "timezone"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.type",
+        "param": "type"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Opening the Add form. It arrives with sensible defaults already set: International, no sector, both statuses Active and a cutoff of four hours.",
+      "Setting the code to {code}. Four fields are required and this is the one that matters most — flights, contracts, stock and compliance all reach an airport through its code, so a typo here creates an airport that nothing else can find. Nothing checks it is unique.",
+      "Setting the name to {name}. Required, and it is what the map search uses.",
+      "Setting the city to {city}. Required.",
+      "Setting the country to {country}. Required.",
+      "Setting the timezone to {timezone}. It is stored as plain text, so type it in the same form as the rest of the register uses, like +04:00 — a named zone would be accepted and then read as nonsense.",
+      "Setting the type to {type}.",
+      "Press Create to save it. Two things to expect afterwards. The list will keep fetching pages until your new airport appears and then scroll to it, so a pause before it shows up is the screen working rather than failing. And once it exists, it is here for good: there is no delete anywhere in this module — the button was never finished — so an airport created by mistake has to be deactivated instead, or removed by someone with database access."
+    ],
+    "notes": "Required by validate(): code, name, city, country. Defaults in initialFormState: type International, sector '-', both statuses Active, cutoff 4 — note the database default for cutoff_hour is 2, so a created airport differs from every seeded one. After creation the page pages forward until the row appears and scrolls it into view. Verified live and confirmed in the destinations table; the test row had to be removed with SQL, because the module has no delete. Verified live: the created airport arrived with cutoff_hour 4 (the form's default) against the 2 every seeded row carries, which is exactly the mismatch the location recipe warns about."
+  },
+  {
+    "id": "destinations.edit-destination",
+    "title": "Edit an airport's record",
+    "intents": [
+      "edit this airport",
+      "change an airport's details",
+      "correct a destination record",
+      "update an airport",
+      "fix this airport's name"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "New airport name.",
+        "example": "ZZ Test Airport Renamed"
+      },
+      {
+        "name": "city",
+        "type": "string",
+        "optional": true,
+        "description": "New city.",
+        "example": "ZZ Test City"
+      },
+      {
+        "name": "country",
+        "type": "string",
+        "optional": true,
+        "description": "New country.",
+        "example": "Testland"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.name",
+        "param": "name"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.city",
+        "param": "city"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.country",
+        "param": "country"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it — Edit works on whatever is selected, so this step is what decides which airport you are about to change.",
+      "Opening the Edit form, filled with the record as it stands.",
+      "Changing the name to {name}.",
+      "Changing the city to {city}.",
+      "Changing the country to {country}.",
+      "Press Save changes to commit them. Everything on this form saves in one go, including the two status switches at the top, so glance over the whole form rather than only the field you came for. Code, name, city and country all have to be filled — the form will not save with any of them empty. Changing the code is the one edit to think twice about: everything else in the system finds this airport by its code, so a record that already has flights or contracts against it should keep the code it has."
+    ],
+    "notes": "One form serves add and edit; in edit mode it hydrates from the selected destination and saves every field together. The Edit button is disabled until a destination is selected, but the screen auto-selects the first row on load, so it is enabled immediately — which is exactly why this recipe selects the row it means rather than relying on what is already showing."
+  },
+  {
+    "id": "destinations.form.set-airport-identity",
+    "title": "Set an airport's code, type and name",
+    "intents": [
+      "change an airport's code",
+      "set the airport type to domestic",
+      "rename an airport",
+      "fix an airport's identity",
+      "set the airport name and type"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "optional": true,
+        "description": "New airport code. Required by the form, so it can be changed but not emptied.",
+        "example": "ZZT"
+      },
+      {
+        "name": "type",
+        "type": "string",
+        "optional": true,
+        "description": "Domestic or International.",
+        "example": "Domestic"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "New airport name.",
+        "example": "ZZ Test Airport"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.code",
+        "param": "code"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.type",
+        "param": "type"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.name",
+        "param": "name"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "Opening the Edit form.",
+      "Setting the code to {code}. Read this before saving: the code is how every other part of the system finds this airport — flights, contracts, station stock, compliance. Changing it on a record that is already in use does not carry those references with it. On a new or unused airport it is safe; on a working one it is not the field to correct casually.",
+      "Setting the type to {type} — Domestic or International, the only two choices.",
+      "Setting the name to {name}. This is the name the map search uses, so a fuller name gives a better pin.",
+      "Press Save changes. The whole form is saved together, so anything else you have altered on it goes at the same time."
+    ],
+    "notes": "code and name are both required by validate(). type is a two-option select with no blank entry, so it always has a value. Verified live on a throwaway airport."
+  },
+  {
+    "id": "destinations.form.set-location",
+    "title": "Set an airport's city, country, province and address",
+    "intents": [
+      "set an airport's address",
+      "change the city and country for an airport",
+      "record the province for this airport",
+      "fix an airport's location",
+      "update the postal details"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      },
+      {
+        "name": "city",
+        "type": "string",
+        "optional": true,
+        "description": "City. Required by the form, so it can be changed but not emptied.",
+        "example": "ZZ Test City"
+      },
+      {
+        "name": "country",
+        "type": "string",
+        "optional": true,
+        "description": "Country. Also required.",
+        "example": "Testland"
+      },
+      {
+        "name": "province",
+        "type": "string",
+        "optional": true,
+        "description": "Province or state. Optional.",
+        "example": "ZZ Province"
+      },
+      {
+        "name": "address",
+        "type": "string",
+        "optional": true,
+        "description": "Street address. Optional, free text.",
+        "example": "1 Test Road"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.city",
+        "param": "city"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.country",
+        "param": "country"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.province",
+        "param": "province"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.address",
+        "param": "address"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "Opening the Edit form.",
+      "Setting the city to {city}. This is required, and it is also what the sidebar shows first, so it is how people will recognise this airport in the list.",
+      "Setting the country to {country}. Also required.",
+      "Setting the province or state to {province}. Optional — most records in this register leave it as a dash.",
+      "Setting the address to {address}. Optional, and worth filling in: the map view is a text search over the name, city and country, so a good address is what makes the pin land somewhere useful.",
+      "Press Save changes to commit all four."
+    ],
+    "notes": "city and country are required by validate(); province_state and address are free text with no validation. None of these fields is used to compute anything — they feed the detail card and the map query."
+  },
+  {
+    "id": "destinations.form.set-timezone",
+    "title": "Set an airport's timezone",
+    "intents": [
+      "set the timezone for an airport",
+      "this airport's time is wrong",
+      "change an airport's utc offset",
+      "fix the timezone on a destination",
+      "the clocks changed at this station"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      },
+      {
+        "name": "timezone",
+        "type": "string",
+        "optional": false,
+        "description": "UTC offset as text, in the form the rest of the register uses.",
+        "example": "+05:30"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.timezone",
+        "param": "timezone"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "Opening the Edit form.",
+      "Setting the timezone to {timezone}. This is a free-text field, not a list of zones, and nothing validates what goes in it — so the format matters: write it the way the rest of the register does, as an offset from UTC like +04:00 or +05:30. Two consequences worth knowing. The current local time on the airport's record is calculated from this string, so a wrong offset does not look wrong, it just quietly shows the wrong time. And because it is an offset rather than a named zone, it does not follow daylight saving: a station that moves its clocks needs somebody to come back and edit this twice a year.",
+      "Press Save changes to commit it."
+    ],
+    "notes": "timezone is varchar(100) with no validation and no picker. The detail card's 'Time Current' is derived from it, which is why a bad value is invisible rather than loud. Verified live on a throwaway airport."
+  },
+  {
+    "id": "destinations.form.set-cutoff",
+    "title": "Set an airport's order cutoff hours",
+    "intents": [
+      "change the order cutoff for an airport",
+      "set the cutoff hours",
+      "this station needs a longer lead time",
+      "how many hours before departure do orders close",
+      "set the cutoff time for a destination"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      },
+      {
+        "name": "cutoff",
+        "type": "string",
+        "optional": false,
+        "description": "Cutoff in whole hours before departure.",
+        "example": "6"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.cutoff",
+        "param": "cutoff"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "Opening the Edit form.",
+      "Setting the cutoff to {cutoff} hours. This is how long before departure orders for this airport stop being accepted, and it is a per-airport figure precisely because stations differ — a station where the caterer needs a day of notice should not carry the same figure as one that can turn an order around in two hours. Everything in this register currently sits on its default, so if you are setting this deliberately you are probably the first person to.",
+      "Press Save changes to commit it."
+    ],
+    "notes": "cutoff_hour is an integer column defaulting to 2, while the create form's initial state uses 4. Measured 2026-07-26: every one of the 161 destinations reads 2, so no airport has a deliberately set cutoff yet."
+  },
+  {
+    "id": "destinations.form.set-sector",
+    "title": "Set an airport's sector",
+    "intents": [
+      "set the sector for an airport",
+      "which sector is this airport in",
+      "assign a destination to a sector",
+      "change an airport's sector",
+      "set this station's region"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      },
+      {
+        "name": "sector",
+        "type": "string",
+        "optional": false,
+        "description": "One of the five options: -, North, South, East or West.",
+        "example": "North"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "destination-form.sector",
+        "param": "sector"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "Opening the Edit form.",
+      "Setting the sector to {sector}. The choices are a dash for none, or North, South, East and West. It is a descriptive grouping and nothing in the system currently plans by it, so setting it is housekeeping rather than an operational change — one airport in the whole register has a sector recorded at all.",
+      "Press Save changes to commit it."
+    ],
+    "notes": "The sector select offers '-', North, South, East, West and defaults to '-'. Measured 2026-07-26: exactly one destination carries a real sector and three carry '-', the rest are empty. No consumer of the sector field exists elsewhere in the app."
+  },
+  {
+    "id": "destinations.form.toggle-status",
+    "title": "Activate or deactivate an airport",
+    "intents": [
+      "deactivate an airport",
+      "we no longer fly to this station",
+      "turn an airport off",
+      "make a destination inactive",
+      "reactivate an airport"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.status-bar"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.toggle-status"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "Read the status bar before you change anything — this is the state you are about to move away from.",
+      "Opening the Edit form. The switch at the top carries the same state you just read.",
+      "Flip the Status switch yourself. I am leaving it to you because it toggles rather than sets: one press flips whatever is there, so if the airport is already active, pressing turns it off. This is also the nearest thing this module has to a delete — there is no delete button anywhere in it, so deactivating is how an airport stops being used while its history stays intact.",
+      "Then press Save changes. Nothing is written until you do, so the switch on its own is reversible."
+    ],
+    "notes": "The two toggles are buttons calling handleToggle, which flips the value in form state only — nothing is saved until Save. The recipe hands the switch over because it toggles. Deactivating is the substitute for deletion in this module: canDelete is commented out and the delete confirm handler only raises a 'not implemented' toast. Verified live 2026-07-26 on a throwaway airport: status went to Inactive in the database and on the status bar, and the airport REMAINED in the register and searchable afterwards — so unlike some other modules' deactivations, this one is genuinely reversible from the UI."
+  },
+  {
+    "id": "destinations.form.toggle-catering-status",
+    "title": "Turn catering on or off at an airport",
+    "intents": [
+      "stop catering at this airport",
+      "turn catering on for a destination",
+      "we do not cater at this station",
+      "change an airport's catering status",
+      "enable catering at an airport"
+    ],
+    "requiredPermission": "setup:destinations:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "destination",
+        "type": "string",
+        "optional": false,
+        "description": "Airport as a single searchable word — its code is the surest (MCT), a city name also works. NOT the full list label: the search box matches code, city or country individually, so \"Muscat (MCT)\" matches nothing.",
+        "example": "ZZT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.destinations",
+        "optional": true
+      },
+      {
+        "do": "click",
+        "target": "sidebar.destinations",
+        "waitFor": "destinations.page"
+      },
+      {
+        "do": "fill",
+        "target": "destinations.search",
+        "param": "destination"
+      },
+      {
+        "do": "click",
+        "target": "destinations.row",
+        "withinTextParam": "destination",
+        "waitFor": "destination-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "destination-detail.status-bar"
+      },
+      {
+        "do": "click",
+        "target": "destinations.edit",
+        "waitFor": "destination-form.dialog"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.toggle-catering"
+      },
+      {
+        "do": "handback",
+        "target": "destination-form.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Destinations in the sidebar.",
+      "Opening the airport register.",
+      "Finding {destination}.",
+      "Selecting it.",
+      "The Catering reading in the status bar is what you are about to change — and it is the separate one: an airport can stay perfectly active as a destination while catering is switched off, which is the normal shape for a station somebody else provisions.",
+      "Opening the Edit form. The Catering switch carries the state you just read.",
+      "Flip it yourself, because it toggles rather than sets — one press flips whatever is there. Turn it off and you are saying we do not cater here, while the airport remains in use for flights.",
+      "Then press Save changes. Both switches and every field on this form are saved together, so check you have not left something else half-changed."
+    ],
+    "notes": "cateringStatus is a separate column from status and is toggled the same way. Both are only written on Save. Measured 2026-07-26: all 161 destinations read Active for both, so no airport currently has catering switched off. Verified live: catering went Inactive while status stayed Active, and the status bar showed the two independently."
+  }
+]
