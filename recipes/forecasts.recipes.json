@@ -1,0 +1,885 @@
+[
+  {
+    "id": "forecasts.open-forecasts",
+    "title": "Open the Forecasts screen",
+    "intents": [
+      "open forecasts",
+      "show me the forecasts",
+      "go to demand forecasting",
+      "where are the forecasts",
+      "open the forecast screen",
+      "i need a demand forecast",
+      "take me to forecasts"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.page"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "This is Forecasts. Nothing is computed until you ask for it: choose what kind of forecast you want, the month it should start from and whether it covers one station or the whole network, then press Generate. There is nothing to save or reopen here — a report lives only as long as you leave those three settings alone."
+    ],
+    "notes": "No snapshot, save, version or milestone UI exists in the client. forecastService exposes exactly getStations and generateDemandForecast, and useForecastStore holds a single transient report that is DISCARDED whenever the report type, start month or station changes. Do not write recipes implying a saved forecast."
+  },
+  {
+    "id": "forecasts.set-report-type",
+    "title": "Choose the forecast type",
+    "intents": [
+      "forecast provisioning items instead",
+      "switch to the ingredient forecast",
+      "change the forecast type",
+      "i want an ingredient forecast",
+      "forecast by provisioning item",
+      "which forecast types are there",
+      "set the forecast to ingredients"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.report-type"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.type-ingredient"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "These are the two kinds of forecast.",
+      "Switching to the ingredient forecast. Provisioning items are the things loaded onto an aircraft — cups, cutlery, bottles. Ingredients are what the kitchen consumes to produce the meals. Changing this discards any report already on screen, because the two are not comparable."
+    ],
+    "notes": "Two radio-style LABEL elements: forecasts.type-provisioning and forecasts.type-ingredient. Switching type clears the current report by design, which is why this recipe stops at the choice instead of generating."
+  },
+  {
+    "id": "forecasts.set-horizon-start",
+    "title": "Set the forecast start month",
+    "intents": [
+      "start the forecast from {month}",
+      "change the forecast start month",
+      "forecast the twelve months from {month}",
+      "set the horizon start",
+      "i want the forecast to begin in {month}",
+      "move the forecast window",
+      "which months does the forecast cover"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [
+      {
+        "name": "month",
+        "type": "string",
+        "optional": false,
+        "description": "First month of the twelve-month horizon, as shown in the list.",
+        "example": "August 2026"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "fill",
+        "target": "forecasts.start-month",
+        "param": "month"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.start-month"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Setting the start month to {month}.",
+      "The horizon is always twelve months long, so this picks the window rather than its length — starting in {month} means the report runs a year from there. Changing it discards any report already on screen."
+    ],
+    "notes": "Native select of month options, so a fill resolves the visible text (\"August 2026\"). Verified live: the list starts at July 2026 and the default selection is August 2026."
+  },
+  {
+    "id": "forecasts.set-station",
+    "title": "Scope the forecast to a station",
+    "intents": [
+      "forecast just {station}",
+      "scope the forecast to {station}",
+      "show the forecast for {station} only",
+      "change the station on the forecast",
+      "forecast the whole network",
+      "limit the forecast to one station",
+      "what will {station} need"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [
+      {
+        "name": "station",
+        "type": "string",
+        "optional": false,
+        "description": "Station code or name, or \"All stations\" for the whole network.",
+        "example": "MCT"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "fill",
+        "target": "forecasts.station",
+        "param": "station"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.station"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Scoping the forecast to {station}.",
+      "Each station in the list shows its departure count, which is a useful sanity check on how much data is behind the number — MCT has over 21,000 departures, while some stations have only a handful. \"All stations\" gives the network-wide picture. Changing this discards any report already on screen."
+    ],
+    "notes": "Native select. Options read like \"MCT — Muscat International Airport (21,834 departures)\", so a param of just \"MCT\" resolves by substring. First option is \"All stations (network-wide)\"."
+  },
+  {
+    "id": "forecasts.generate-report",
+    "title": "Generate a demand forecast",
+    "intents": [
+      "generate the forecast",
+      "run the demand forecast",
+      "build me a forecast",
+      "produce the forecast report",
+      "calculate the forecast",
+      "give me the twelve month forecast",
+      "run it"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.kpis"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "And there it is. The headline figures come first, then the monthly chart, the item-by-item table, the category mix and the written notes."
+    ],
+    "notes": "Verified live: a network-wide provisioning forecast took 18 seconds, a single-station ingredient forecast 3, so the wait carries timeoutMs 60000 rather than the player's 8s default. Two waits on purpose: the generating state first (proof the run started, since a stale report's KPIs would otherwise satisfy the wait instantly), then the assert that the report arrived. It is a read — nothing is persisted."
+  },
+  {
+    "id": "forecasts.view-kpis",
+    "title": "Read the forecast headline figures",
+    "intents": [
+      "what are the headline forecast numbers",
+      "how much will we need in total",
+      "what is the peak month",
+      "how many items are in the forecast",
+      "show me the forecast summary figures",
+      "what is the biggest category",
+      "give me the forecast at a glance"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.kpis"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "Five figures across the top. Which five depends on the forecast type: a provisioning report gives you the annual requirement, the peak month, the monthly average, how many items are tracked and the largest category; an ingredient report replaces the last two with the solids and liquids split, in kilograms and litres, since ingredients are not counted in units. Either way the annual figure is the sum of every monthly line in the table below, so the two always agree."
+    ],
+    "notes": "Verified live in BOTH modes. Provisioning, network-wide from August 2026: 68,521,864 units, peak Dec '26 at 7,553,545, average 5.7M, 226 items in 12 categories, largest category Consumables. Ingredient, MCT: 330M kg-equivalent, 285M kg solids, 45M L liquids, peak Aug '26, 187 ingredients in 47 categories. The KPI set genuinely differs between the two, which is why the prose does not name a fixed five."
+  },
+  {
+    "id": "forecasts.view-chart",
+    "title": "Read the monthly demand chart",
+    "intents": [
+      "show me the monthly demand chart",
+      "how does demand vary month to month",
+      "is demand seasonal",
+      "show the forecast chart",
+      "which months are heaviest",
+      "read me the monthly bars",
+      "how does the year look"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.chart"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "One bar per month across the twelve-month horizon, all items combined, with the peak month picked out. Read it for shape rather than precision: it tells you where the pressure lands in the year, and the table underneath gives you the exact numbers."
+    ],
+    "notes": "The chart labels each bar with its month and rounded volume and marks the peak with an arrow. Verified live: bars ran Aug '26 through Jul '27 with Dec '26 highlighted."
+  },
+  {
+    "id": "forecasts.find-peak-month",
+    "title": "Find the peak demand month",
+    "intents": [
+      "when is demand highest",
+      "what is the peak month",
+      "which month do we need the most",
+      "when will we be busiest",
+      "show me the peak in the forecast",
+      "which month should i plan extra stock for",
+      "where does demand peak"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.kpis"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.chart"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The peak month is called out directly in the headline figures, with the volume next to it.",
+      "And it is the highlighted bar in the chart, so you can see how far above the others it actually sits — a peak only slightly above average is a different planning problem from one that towers over the year."
+    ],
+    "notes": "Peak comes from the report's own KPI, not from reading the chart, so the two cannot disagree. Verified live: Dec '26 at 7,553,545 units against a 5.7M monthly average."
+  },
+  {
+    "id": "forecasts.view-table",
+    "title": "Read the monthly requirements table",
+    "intents": [
+      "show me the requirements table",
+      "what does the forecast need each month",
+      "open the monthly table",
+      "show the item by item forecast",
+      "how much of each item per month",
+      "show the detailed forecast",
+      "give me the numbers by month"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.table"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The table is the forecast in full: one row per item, one column per month of the horizon. Rows are grouped by category with a subtotal under each group, and the grand totals sit at the bottom. It is wide — scroll sideways to reach the later months."
+    ],
+    "notes": "Grouped table: category header rows, item rows (forecasts.table-row, labelled with the item name), a subtotal row per category, then overall total rows. Verified live: 226 item rows in 12 category groups."
+  },
+  {
+    "id": "forecasts.find-item-requirement",
+    "title": "Look up one item's forecast requirement",
+    "intents": [
+      "how many {itemName} will we need",
+      "what is the forecast for {itemName}",
+      "look up {itemName} in the forecast",
+      "how much {itemName} per month",
+      "find {itemName} in the requirements table",
+      "what does the forecast say about {itemName}",
+      "{itemName} monthly requirement"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [
+      {
+        "name": "itemName",
+        "type": "string",
+        "optional": false,
+        "description": "Provisioning item or ingredient name as it appears in the table.",
+        "example": "Paper Cups"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.table-row",
+        "withinTextParam": "itemName"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "That's the {itemName} row. Reading across gives you the requirement for each month of the horizon; the category subtotal beneath its group shows how much of that category's volume this one item accounts for."
+    ],
+    "notes": "Item rows carry data-zoe-label with the item name. Verified live against real rows: Swizzle Stick, Paper Cups, Coffee Mate and Sugar Sachet all resolve. An item absent from the forecast fails the step with the available names listed, which is the honest answer to \"is it in there\"."
+  },
+  {
+    "id": "forecasts.view-category-mix",
+    "title": "See which categories dominate demand",
+    "intents": [
+      "which categories dominate the forecast",
+      "show me the category mix",
+      "what share is consumables",
+      "break the forecast down by category",
+      "where does the volume actually sit",
+      "show the category split",
+      "which category is biggest"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.mix"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The mix shows each category's share of the total. Expect it to be lopsided — a handful of high-count consumables usually dwarf everything else by unit volume, which is worth remembering before reading it as a measure of cost or importance. Categories under one percent are shown as \"<1%\" rather than rounded to nothing."
+    ],
+    "notes": "Verified live: Consumables 73%, Rotable 12%, MINERALS 7%, Alcohol 5%, everything else under 1%. Note the live data also contains a category whose name is a bare numeric string, which shows in the mix as-is — a master-data issue, not a forecast one."
+  },
+  {
+    "id": "forecasts.view-executive-summary",
+    "title": "Read the forecast's executive summary",
+    "intents": [
+      "read me the executive summary",
+      "what does the forecast say in words",
+      "summarise the forecast",
+      "give me the written summary",
+      "what is the headline of this report",
+      "explain the forecast in plain english",
+      "read the summary"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.notes"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The executive summary is the first block of the written notes. It states what was aggregated, over which months, and the totals — so it is the part to read out or paste into a message when someone asks what the forecast says."
+    ],
+    "notes": "The notes panel holds the executive summary, demand drivers, methodology and provenance sections in one element, which is why those four recipes share the forecasts.notes target and differ in what the prose points at."
+  },
+  {
+    "id": "forecasts.view-demand-drivers",
+    "title": "Read the demand drivers",
+    "intents": [
+      "what is driving the demand",
+      "why is demand highest then",
+      "what drives the forecast",
+      "explain the peaks",
+      "what causes the variation",
+      "read me the demand drivers",
+      "why does demand change month to month"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.notes"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The demand drivers section explains why the shape looks the way it does — how flight volume, route mix and packing standards push the monthly numbers around. Read it before treating a peak as a surprise; usually it is simply where the flights are."
+    ],
+    "notes": "Part of the notes panel. Keep this recipe's prose about causes, and leave the arithmetic to view-executive-summary, so the two are not saying the same thing twice."
+  },
+  {
+    "id": "forecasts.view-methodology",
+    "title": "Read how the forecast was calculated",
+    "intents": [
+      "how was this forecast calculated",
+      "what is the methodology",
+      "where do these numbers come from",
+      "how does the forecast work",
+      "explain the calculation",
+      "is this a projection or actuals",
+      "how reliable is this forecast"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.notes"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The methodology section is the important one before anyone acts on these numbers. The forecast is not a statistical projection — it materialises each flight's packing standards into per-item manifest lines and sums them by item and departure month across scheduled, non-cancelled flights. So it answers \"what does the current schedule imply\", and it moves when the schedule or the standards move."
+    ],
+    "notes": "Verified against the report's own text, which describes exactly this aggregation. Worth stating plainly in prose: readers assume \"forecast\" means a trend projection, and this is a deterministic roll-up of the schedule."
+  },
+  {
+    "id": "forecasts.view-provenance",
+    "title": "Check the forecast's data coverage",
+    "intents": [
+      "how much data is behind this forecast",
+      "check the forecast's coverage",
+      "is this forecast trustworthy",
+      "what data went into this",
+      "how many flights does this cover",
+      "check the provenance",
+      "does this cover all the flights"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.notes"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The provenance section states what the report actually drew on. This is the part to check before quoting a number for one station: the station list shows departure counts ranging from tens of thousands down to a single flight, and a forecast built on a handful of departures is arithmetic, not insight."
+    ],
+    "notes": "Part of the notes panel. The departure counts in the station selector are the quickest corroboration of coverage, which is why the prose sends the reader there."
+  },
+  {
+    "id": "forecasts.download-pdf",
+    "title": "Download the forecast as a PDF",
+    "intents": [
+      "download the forecast",
+      "export the forecast to pdf",
+      "i need a pdf of this forecast",
+      "save the forecast report",
+      "print the forecast",
+      "send me this as a file",
+      "get a pdf copy"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.download-pdf"
+      },
+      {
+        "do": "handback",
+        "target": "forecasts.download-pdf"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "The download button is at the top of the report.",
+      "Press it to save the PDF. It contains what is on screen for the settings you generated with — nothing is stored on the server, so this file is the only lasting copy of this report."
+    ],
+    "notes": "A handback even though this is a read recipe: it puts a file on the user's machine, and that is their decision to make rather than something a walkthrough should do to them. Only enabled once a report exists."
+  },
+  {
+    "id": "forecasts.tour-report",
+    "title": "Walk through a forecast report",
+    "intents": [
+      "walk me through this forecast",
+      "explain the forecast report",
+      "give me a tour of the forecast",
+      "talk me through the report",
+      "i am new to this, explain the forecast",
+      "show me around the forecast",
+      "explain each part of the report"
+    ],
+    "requiredPermission": "forecasts",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.forecasts"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.forecasts",
+        "waitFor": "forecasts.page"
+      },
+      {
+        "do": "click",
+        "target": "forecasts.generate",
+        "waitFor": "forecasts.generating",
+        "timeoutMs": 15000
+      },
+      {
+        "do": "assert",
+        "target": "forecasts.kpis",
+        "timeoutMs": 60000,
+        "message": "The report should be on screen before I read it back to you."
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.kpis"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.chart"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.table"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.mix"
+      },
+      {
+        "do": "highlight",
+        "target": "forecasts.notes"
+      }
+    ],
+    "prose": [
+      "I'll highlight Forecasts in the sidebar.",
+      "Opening the Forecasts screen.",
+      "Generating the forecast. It is computed over every scheduled flight in the horizon, so the wait depends on how much you asked for: a single station came back in a few seconds, the whole network took closer to twenty.",
+      "The report is built.",
+      "Start at the top: the annual requirement, the peak month, the monthly average, how many items are tracked and the largest category. This is the whole report in five numbers.",
+      "The chart is the shape of the year — one bar per month with the peak marked, so you can see where the pressure lands.",
+      "The table is the detail behind both: one row per item, one column per month, grouped by category with subtotals and a grand total.",
+      "The mix tells you where the volume actually sits. It is normally very lopsided, so read it as volume and not as cost.",
+      "And the notes explain the report in words: what it says, what drives it, how it was calculated and what data it rests on. If you only read one part before acting on the numbers, read the methodology — this is a roll-up of the current schedule, not a statistical projection."
+    ],
+    "notes": "The orientation recipe for someone meeting this screen for the first time; it deliberately ends on the methodology caveat rather than on a number."
+  }
+]
