@@ -29,10 +29,10 @@ jobs:
         run: npx playwright install --with-deps
 
       # Playwright validation
+      # Uncomment when Playwright tests are available
       # - name: Run Playwright validation
       #   run: npx playwright test
 
-      # Find only the recipe files changed in this commit
       - name: Find changed recipe files
         id: recipes
         shell: bash
@@ -49,7 +49,6 @@ jobs:
             echo "found=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # Upload → Validate → Ingest
       - name: Validate and ingest recipes
         if: steps.recipes.outputs.found == 'true'
         env:
@@ -72,15 +71,30 @@ jobs:
 
             echo "Uploading recipe..."
 
-            upload_response=$(curl --fail-with-body -s \
+            upload_response=$(curl -sS \
               -X POST "$API_URL/api/v1/upload" \
               -H "Authorization: Bearer $API_TOKEN" \
-              -F "file=@$file")
+              -F "file=@$file" \
+              -w "\nHTTP_STATUS:%{http_code}")
 
+            upload_status=$(echo "$upload_response" | sed -n 's/HTTP_STATUS://p')
+            upload_body=$(echo "$upload_response" | sed '/HTTP_STATUS:/d')
+
+            echo "Upload HTTP status: $upload_status"
             echo "Upload response:"
-            echo "$upload_response" | jq .
+            echo "$upload_body" | jq . 2>/dev/null || echo "$upload_body"
 
-            upload_id=$(echo "$upload_response" | jq -r '.upload_id')
+            if [ "$upload_status" -lt 200 ] || [ "$upload_status" -ge 300 ]; then
+              echo ""
+              echo "======================================"
+              echo "UPLOAD FAILED"
+              echo "Recipe: $file"
+              echo "HTTP Status: $upload_status"
+              echo "======================================"
+              exit 1
+            fi
+
+            upload_id=$(echo "$upload_body" | jq -r '.upload_id')
 
             if [ -z "$upload_id" ] || [ "$upload_id" = "null" ]; then
               echo "ERROR: upload_id was not returned."
@@ -95,26 +109,36 @@ jobs:
 
             echo "Validating recipe..."
 
-            validate_response=$(curl --fail-with-body -s \
+            validate_response=$(curl -sS \
               -X POST "$API_URL/api/v1/validate" \
               -H "Authorization: Bearer $API_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"upload_id\":\"$upload_id\"}")
+              -d "{\"upload_id\":\"$upload_id\"}" \
+              -w "\nHTTP_STATUS:%{http_code}")
 
+            validate_status=$(echo "$validate_response" | sed -n 's/HTTP_STATUS://p')
+            validate_body=$(echo "$validate_response" | sed '/HTTP_STATUS:/d')
+
+            echo "Validation HTTP status: $validate_status"
             echo "Validation response:"
-            echo "$validate_response" | jq .
+            echo "$validate_body" | jq . 2>/dev/null || echo "$validate_body"
 
-            can_ingest=$(echo "$validate_response" | jq -r '.can_ingest')
+            if [ "$validate_status" -lt 200 ] || [ "$validate_status" -ge 300 ]; then
+              echo "Validation API request failed."
+              exit 1
+            fi
+
+            can_ingest=$(echo "$validate_body" | jq -r '.can_ingest')
 
             if [ "$can_ingest" != "true" ]; then
               echo ""
               echo "======================================"
-              echo "VALIDATION FAILED"
+              echo "RECIPE VALIDATION FAILED"
               echo "Recipe: $file"
               echo "Upload ID: $upload_id"
               echo "======================================"
 
-              echo "$validate_response" | jq '.errors // .'
+              echo "$validate_body" | jq '.errors // .'
 
               exit 1
             fi
@@ -127,16 +151,26 @@ jobs:
 
             echo "Starting ingestion..."
 
-            ingest_response=$(curl --fail-with-body -s \
+            ingest_response=$(curl -sS \
               -X POST "$API_URL/api/v1/ingest" \
               -H "Authorization: Bearer $API_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"upload_id\":\"$upload_id\"}")
+              -d "{\"upload_id\":\"$upload_id\"}" \
+              -w "\nHTTP_STATUS:%{http_code}")
 
+            ingest_status=$(echo "$ingest_response" | sed -n 's/HTTP_STATUS://p')
+            ingest_body=$(echo "$ingest_response" | sed '/HTTP_STATUS:/d')
+
+            echo "Ingestion HTTP status: $ingest_status"
             echo "Ingestion response:"
-            echo "$ingest_response" | jq .
+            echo "$ingest_body" | jq . 2>/dev/null || echo "$ingest_body"
 
-            job_id=$(echo "$ingest_response" | jq -r '.job_id')
+            if [ "$ingest_status" -lt 200 ] || [ "$ingest_status" -ge 300 ]; then
+              echo "Ingestion API request failed."
+              exit 1
+            fi
+
+            job_id=$(echo "$ingest_body" | jq -r '.job_id')
 
             if [ -z "$job_id" ] || [ "$job_id" = "null" ]; then
               echo "ERROR: job_id was not returned."
