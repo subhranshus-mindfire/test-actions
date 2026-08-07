@@ -74,7 +74,7 @@ jobs:
             upload_response=$(curl -sS \
               -X POST "$API_URL/api/v1/upload" \
               -H "Authorization: Bearer $API_TOKEN" \
-              -F "file=@$file" \
+              -F "files=@$file" \
               -w "\nHTTP_STATUS:%{http_code}")
 
             upload_status=$(echo "$upload_response" | sed -n 's/HTTP_STATUS://p')
