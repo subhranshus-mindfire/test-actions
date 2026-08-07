@@ -1,0 +1,1439 @@
+[
+  {
+    "id": "equipment.browse-list",
+    "title": "Browse the equipment catalogue",
+    "intents": [
+      "show me the equipment catalogue",
+      "open equipment",
+      "what equipment do we have",
+      "list the carts and containers",
+      "how many equipment items are there",
+      "go to galley planner equipment",
+      "where is the equipment master list"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.category-item"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.row"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing, where Equipment lives.",
+      "This is the equipment catalogue: the physical carts, containers, ovens, oven inserts, drawers and trays that every packing standard is built on. A packing standard says what goes into a piece of equipment, so what you see here is the vocabulary the rest of Galley Planner uses. There are 37 items in the catalogue today.",
+      "Pressing Show All first. The category you last picked is remembered between visits, so the screen does not necessarily open on the whole catalogue — and a row you are looking for can sit outside the remembered category.",
+      "Down the left is Category Type, the rail that groups the catalogue. Seven categories carry items: Bulk 5, Cart 10, Drawer 3, Oven Insert 3, Oven Sleeve 1, Std Container 1 and Tray 9 — 32 items between them.",
+      "On the right is the item table: code, name, category, status and the three row actions — view, edit and delete. The header reads 37 while the rail only accounts for 32, because 5 items have no category at all. Those 5 show a blank Category cell and appear only in this Show All view, so if you go looking for one inside a category you won't find it."
+    ],
+    "notes": "Entry is sidebar.galley-planner -> galley-planner-landing.equipment-card -> equipment.page; both /galley-planner-landing/equipment and /galley-planner-landing/equipment/:id are already in routeMap.ts. equipment.page and equipment.row are READ ANCHORS (plain div/tr) — highlight them, never click them; a click on a read anchor dispatches a real pointer event that does nothing and the run still reports success. Verified live: 37 items, one page of 50, so the InfiniteScrollTrigger never fires a second fetch. The rail hides 'Meal' and 'Provision' by a hardcoded case-insensitive name filter (both are empty FileMaker taxonomy placeholders). The header count is filteredEquipment.length — the client-side count after the search box, not a server total."
+  },
+  {
+    "id": "equipment.filter-by-category",
+    "title": "Filter equipment by category",
+    "intents": [
+      "show me the {category} equipment",
+      "filter equipment by {category}",
+      "list all the carts",
+      "what trays do we have",
+      "show only {category} items",
+      "how many {category} items are there",
+      "narrow the equipment list to one category"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Category as named in the Category Type rail: Bulk, Cart, Drawer, Oven Insert, Oven Sleeve, Std Container or Tray.",
+        "example": "Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.category-item",
+        "withinTextParam": "category",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.row",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Selecting {category} in the Category Type rail. The table refetches from the server for that category alone. The seven categories that hold anything are Bulk with 5 items, Cart with 10, Drawer with 3, Oven Insert with 3, Oven Sleeve with 1, Std Container with 1 and Tray with 9.",
+      "That's the {category} list. Two categories you might expect are deliberately not offered here — Meal and Provision are left over from the FileMaker taxonomy, hold no equipment, and are filtered out of the rail on purpose. And remember the 5 items with no category: no category selection will ever show them, only Show All does."
+    ],
+    "notes": "equipment.category-item carries data-zoe-label = the category name, so withinTextParam matches on the exact rail label. Selecting a category refetches server-side with equipment_category_id and also rewrites the header to '<Category> List (n)'. The selection is written to sessionStorage under equipment_selected_category_id and is read back on the next visit, so this recipe changes the starting state of later visits. The final highlight is optional: Oven Sleeve and Std Container hold exactly one item each and an empty result is a legitimate answer, not a failure. equipment.row is a read anchor — highlight only."
+  },
+  {
+    "id": "equipment.show-all-categories",
+    "title": "Show all equipment categories",
+    "intents": [
+      "show me all the equipment again",
+      "clear the equipment category filter",
+      "show all equipment",
+      "remove the category filter",
+      "why am i only seeing some equipment",
+      "get back to the full equipment list",
+      "reset the equipment list"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "assert",
+        "target": null,
+        "textVisible": "All Equipment",
+        "message": "The table header still names a single category, so the filter did not clear. Press Show All at the top of the Category Type panel yourself, then reload the page if the header still shows a category."
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue. It may already be filtered — the category you last picked is remembered between visits, so the screen does not necessarily open on everything.",
+      "Pressing Show All at the top of the Category Type panel. That clears the remembered category and refetches the whole catalogue.",
+      "The header now reads All Equipment with all 37 items, including the 5 that have no category and show a blank Category cell. This is the only view that shows those 5, which is why Show All is the way back to a complete list."
+    ],
+    "notes": "Show All calls setSelectedCategory(null), which removes equipment_selected_category_id from sessionStorage and triggers a refetch with no category parameter — that persistence is exactly why a recipe needing a known starting state should press this first. Show All does NOT clear the category search box, and does not clear the equipment search box either; both are separate client-side filters. The assert reads the table header ('All Equipment (37)' when nothing is selected, '<Category> List (n)' otherwise) and its message only ever appears on failure."
+  },
+  {
+    "id": "equipment.search-categories",
+    "title": "Search the equipment categories",
+    "intents": [
+      "search the equipment categories for {query}",
+      "find the {query} category",
+      "filter the category list",
+      "is there a category called {query}",
+      "search the category rail",
+      "narrow the equipment categories to {query}",
+      "look for a category by name"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "query",
+        "type": "string",
+        "optional": false,
+        "description": "Text to match against the category names in the rail.",
+        "example": "Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "fill",
+        "target": "equipment.category-search",
+        "param": "query"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.category-item",
+        "withinTextParam": "query",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Typing \"{query}\" into the category search box. This narrows the Category Type rail only — the item table on the right does not change, so the count in its header stays exactly where it was.",
+      "That's the match. Before you move on, clear this box: the category dropdown inside the Add and Edit Equipment form is built from whatever the rail is currently showing, so text left here means the form offers a short list and the category you want may be missing from it. Only Meal and Provision are permanently excluded from the rail; everything else comes back as soon as the box is empty."
+    ],
+    "notes": "The rail is filteredCategories = categories filtered by categorySearchQuery AND by the hardcoded ['meal','provision'] name exclusion. That same filteredCategories array is passed to EquipmentItemModal as its categories prop, so leftover search text really does shrink the form's category dropdown — this is the cause of a 'Could not select X' failure on a create or edit. Pressing Show All does not fix it (that clears the selected category, not the search text); the box has to be emptied. Searching does not refetch anything: both filters are client-side. Final highlight is optional because no match is a legitimate answer."
+  },
+  {
+    "id": "equipment.search-equipment",
+    "title": "Search the equipment list",
+    "intents": [
+      "find the equipment {query}",
+      "search equipment for {query}",
+      "which cart is {query}",
+      "look up equipment by code",
+      "search the catalogue for {query}",
+      "do we have any {query} equipment",
+      "find an item by name or code"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "query",
+        "type": "string",
+        "optional": false,
+        "description": "Text to match against an item's code or its name. Part of either is enough.",
+        "example": "Atlas"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "fill",
+        "target": "equipment.search",
+        "param": "query"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.row",
+        "withinTextParam": "query",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Searching for \"{query}\". The box matches either the code or the name, and it filters as each character lands — there is no delay and nothing to submit. The count in the table header follows the filter, so it tells you how many items matched.",
+      "That's the match. This search only looks at the rows already on screen, so if a category is selected it searches inside that category — press Show All first if you want to search the whole catalogue. Codes are not unique here: FA001443 and FA001444 are each shared by three different items, so a code search can legitimately return several rows that differ only by name."
+    ],
+    "notes": "Undebounced client-side filter over the loaded page: item.code_s or item.name, both lower-cased, substring match. All 37 items arrive in a single page of 50, so today the filter effectively sees the whole catalogue when no category is selected. equipment.row is a read anchor with data-zoe-label = '<code> <name>', which is why withinTextParam works on it — but only highlight it, never click it. Final highlight is optional because an empty result is a valid answer; the screen shows 'No equipment found in this category' in that case."
+  },
+  {
+    "id": "equipment.refresh-list",
+    "title": "Refresh the equipment list",
+    "intents": [
+      "refresh the equipment list",
+      "reload the equipment catalogue",
+      "the equipment list looks out of date",
+      "someone else changed an item, refresh it",
+      "pull the latest equipment from the server",
+      "refresh equipment",
+      "reload the items table"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.refresh",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.row"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Pressing Refresh. This asks the server for the items again, so anything a colleague has added, edited or deleted since you opened the screen appears now. It also resets the table to the first page: if you had scrolled far enough to load extra pages, those are discarded and only the first page comes back. Your category selection is kept, so a filtered list refreshes as that same filter.",
+      "Here is the reloaded list. The search box is untouched by a refresh — it filters what is on screen rather than what is fetched, so if the list still looks short, check whether something is typed there."
+    ],
+    "notes": "Refresh calls fetchItems(selectedCategory?.id), which sets currentPage back to 1, resets hasMore to true and replaces the equipment array outright. With 37 items in a page of 50 the reset costs nothing today, but on a larger catalogue anything scrolled in is genuinely thrown away. Failure shows the toast 'Failed to fetch equipment items'. Refresh does not re-fetch the category rail — that is loaded once on mount, so a brand-new category needs a page reload to appear."
+  },
+  {
+    "id": "equipment.open-equipment",
+    "title": "Open an equipment item",
+    "intents": [
+      "open {item}",
+      "show me the details for {item}",
+      "what is the capacity of {item}",
+      "how many positions does {item} have",
+      "does {item} have rear access",
+      "show the equipment record for {item}",
+      "open the detail page for an equipment item"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "FA00667 Duty Free Large Cart · Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.info-table"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.info-table"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Opening {item} with the information icon on its row. If the item is inside a category you have not selected, or the search box is filtering it out, its row is not on screen and I cannot reach it — press Show All first in that case.",
+      "This is the item's own page. General Information lists Code, Category, Full Name, Short Name, Weight and Capacity, then Positions and Rear Access on the last line. A missing weight or capacity displays as 0 rather than blank, and Positions is not shown at all for a Drawer, Tray or Oven Sleeve, because those categories do not use it. Down the left is every other item in the same category, so you can step between siblings without coming back here."
+    ],
+    "notes": "equipment.row-view is the Info icon button and is the only clickable way into the detail page from a row; it carries data-zoe-label = '<code> <name>', which is why the param must include both — code alone is ambiguous for the two shared codes. Best all-round example: FA001443 'Atlas Large Size Meal Cart' — Active, weight 17.90, capacity 100.00, Positions 7, Rear Access yes, and it has a photo. equipment-detail.info-table, .info-row, .row-positions, .row-rear-access, .status and .image are all READ ANCHORS; highlight them, never click. The sibling rail on the detail page is built from an unparameterised fetch and filtered in the browser, so on a much larger catalogue it can be missing siblings that really exist."
+  },
+  {
+    "id": "equipment.create-equipment",
+    "title": "Create an equipment item",
+    "intents": [
+      "create a new equipment item",
+      "add a new cart to the catalogue",
+      "add equipment called {name}",
+      "set up a new container in equipment",
+      "i need to add a piece of equipment",
+      "new equipment item with code {code}",
+      "register a new trolley in the catalogue"
+    ],
+    "requiredPermission": "galley-planner:equipment:create",
+    "risk": "write",
+    "params": [
+      {
+        "name": "code",
+        "type": "string",
+        "optional": false,
+        "description": "Equipment code. Required. It is not checked for uniqueness, so pick something that will not be confused with an existing code.",
+        "example": "ZZTEST-EQ-01"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": false,
+        "description": "Full name of the item. Required, and it is what identifies the item everywhere else.",
+        "example": "ZZ Test Cart (safe to delete)"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "optional": false,
+        "description": "Category as named in the dropdown: Bulk, Cart, Drawer, Oven Insert, Oven Sleeve, Std Container or Tray. Required.",
+        "example": "Cart"
+      },
+      {
+        "name": "weight",
+        "type": "string",
+        "optional": false,
+        "description": "Empty weight in kg. Required and must be greater than zero.",
+        "example": "1"
+      },
+      {
+        "name": "capacity",
+        "type": "string",
+        "optional": false,
+        "description": "Weight capacity in kg. Required and must be greater than zero.",
+        "example": "1"
+      },
+      {
+        "name": "positions",
+        "type": "string",
+        "optional": true,
+        "description": "Number of positions, greater than zero. Required for most categories but not shown at all for Drawer, Tray or Oven Sleeve.",
+        "example": "6"
+      },
+      {
+        "name": "shortName",
+        "type": "string",
+        "optional": true,
+        "description": "Short name for tight displays. Optional, 30 characters at most.",
+        "example": "ZZ Test Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.new-equipment",
+        "waitFor": "equipment-modal.field-code"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-code",
+        "param": "code"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-category",
+        "param": "category"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-name",
+        "param": "name"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-short-name",
+        "param": "shortName",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-weight",
+        "param": "weight"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-capacity",
+        "param": "capacity"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-positions",
+        "param": "positions",
+        "optional": true
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Pressing Show All first, so we start from the complete catalogue rather than whichever category was remembered from last time. One thing to check before we go on: if anything is typed in the category search box on the left, the form's category dropdown will only offer the categories the rail is currently showing, and {category} may not be among them. Clear that box if it has text in it.",
+      "Opening the New Equipment form. Code, Category and Full Name are required; Weight, Capacity and Positions must each be greater than zero, so zero is rejected the same as blank.",
+      "Entering the code {code}. Codes are not unique in this catalogue — FA001443 and FA001444 are each shared by three items — so nothing will stop you reusing one, and nothing will warn you either.",
+      "Choosing the category {category}. This choice also decides whether Positions appears at all: for Drawer, Tray and Oven Sleeve the field is removed from the form and dropped from validation, and it disappears the moment you switch to one of those three.",
+      "Entering the full name {name}.",
+      "Entering the short name {shortName}. This one is optional and capped at 30 characters — the box stops accepting more, and anything longer is rejected on save.",
+      "Setting the weight to {weight} kg. This is the empty weight of the item itself.",
+      "Setting the capacity to {capacity} kg — the most it may carry.",
+      "Setting the positions to {positions}. If the Positions box is not on the form, {category} is one of the three categories that do not use it and there is nothing to fill in — that is correct, not a fault.",
+      "The form is ready. Press Save Equipment to create the item. The photo is the one thing I cannot do for you: choosing a file opens your computer's file picker, which I have no way to drive, so use the image square on the left yourself if you want a picture. Also worth knowing before you press: on success the screen jumps straight to the new item's own page, so you will not be looking at this list any more, and Rear Access is left off unless you tick Has Rear yourself."
+    ],
+    "notes": "Save is gated by validate() in EquipmentItemModal: code_s, equipment_category_id and name required; name_short <= 30 (the input also has maxLength=30); weight > 0; weight_capacity > 0; drawer_count > 0 unless hidden. NO_POSITION_CATEGORIES = ['Drawer','Tray','Oven Sleeve'] — an exact case-sensitive match against the category selected IN THE FORM, so the Positions field can vanish mid-edit; when hidden it is also skipped by validation, which is why the fill is optional:true. The Save button reads 'Save Equipment' in both create and edit mode; only the heading differs ('Add Equipment Item' vs 'Edit Equipment Item'). The category dropdown is the parent's filteredCategories, narrowed by the list screen's category search box — leftover text there is the real cause of a 'Could not select {category}' failure; Show All does not clear it. equipment-modal.image-upload must never be clicked: it fronts a hidden native file input (className='hidden'), Zoe has no upload primitive, and a click opens the OS file chooser and stalls the run. equipment-modal.save is HANDBACK ONLY. On success handleCreateItem navigates to /galley-planner-landing/equipment/<newId>, so any follow-up assert must be written against the detail screen, not the list. Failure shows the toast 'Failed to create equipment item'. Safe write target for a demo: code ZZTEST-EQ-01, name 'ZZ Test Cart (safe to delete)', category Cart (keeps Positions on screen), weight 1, capacity 1, positions 6 — none of which collide with the 37 real FileMaker items. OBSERVED on a live create, not just read from the source: the new row is saved with type='Inactive'. The modal always sends type: item.type || 'Inactive', and on a create there is no item, so the fallback wins. type is the column FlightPreparationDetailsModal branches on to pick the Drawer / Cart / Oven visual, and it is not exposed anywhere in this form — so a newly created cart is mis-typed from birth and nothing on this screen can correct it. The item's own Status is unaffected and comes out Active."
+  },
+  {
+    "id": "equipment.edit-equipment",
+    "title": "Edit an equipment item from the list",
+    "intents": [
+      "edit {item}",
+      "change the weight of {item}",
+      "update the capacity on {item}",
+      "rename the equipment item {item}",
+      "fix the details on an equipment item",
+      "correct {item}",
+      "modify an equipment item from the list"
+    ],
+    "requiredPermission": "galley-planner:equipment:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement full name, if the name is what is changing.",
+        "example": "ZZ Test Cart (renamed)"
+      },
+      {
+        "name": "weight",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement empty weight in kg. Must be greater than zero.",
+        "example": "12.5"
+      },
+      {
+        "name": "capacity",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement weight capacity in kg. Must be greater than zero.",
+        "example": "60"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.row",
+        "withinTextParam": "item"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-edit",
+        "withinTextParam": "item",
+        "waitFor": "equipment-modal.field-name"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-name",
+        "param": "name",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-weight",
+        "param": "weight",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-capacity",
+        "param": "capacity",
+        "optional": true
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Pressing Show All first. The category you last picked is remembered between visits, so the screen does not necessarily open on the whole catalogue — and a row you are looking for can sit outside the remembered category.",
+      "This is the row for {item}. Check it is the one you mean before we change anything — codes repeat here, so the name is what tells two rows apart.",
+      "Opening it with the pencil icon. The form comes up headed Edit Equipment Item and pre-filled with everything the item holds now, so anything you do not ask me to change stays as it is.",
+      "Changing the full name to {name}. This name is how the item is identified on packing standards and in the loading views, so a rename shows up wherever it is used. A caution that bites on older records: the form validates every field, not just the ones you change. Thirteen items have no stored Capacity and nine have no Positions, so the form opens with a 0 there and refuses to save until a real number is typed — and those are figures off the physical unit, which I will not invent. The five items with no category cannot be saved either until one is chosen.",
+      "Changing the weight to {weight} kg. It has to be greater than zero — zero is rejected.",
+      "Changing the capacity to {capacity} kg, again greater than zero.",
+      "That is the change staged. Press Save Equipment to commit it. Two things not to worry about: the existing photo is kept even though the picker looks empty, and Positions and Rear Access are untouched unless you change them yourself. Saving from this list keeps you on the list and reloads the table, so you will see the new values in the row rather than being taken anywhere."
+    ],
+    "notes": "equipment.row-edit is the pencil button, disabled without galley-planner:equipment:update (title becomes 'Permission Required'), so the click silently does nothing when the permission is missing. It shares its data-zoe-label with equipment.row and equipment.row-delete ('<code> <name>'), so withinTextParam resolves the same way for all three. The modal is the same component as create — same field ids, and the Save button still reads 'Save Equipment'. Verified end to end that saving without re-picking a photo does NOT clear it: the modal sends base64_image as an empty string (falsy, so the upload is skipped) and omits the picture field entirely, and the repository guards with 'if (data.picture !== undefined)', leaving the column untouched. Validation still runs on every field, not just the ones changed, so an item that was already saved with a zero weight cannot be saved again until the weight is fixed. If the category is switched to Drawer, Tray or Oven Sleeve the Positions field disappears from the form and stops being validated. handleUpdateItem on the list screen calls fetchItems(selectedCategory?.id) and stays put — it does not navigate; failure shows the toast 'Failed to update equipment item'. Only use a throwaway row like ZZTEST-EQ-01 for a demonstration: all 37 catalogued items are real FileMaker master data. VERIFIED TRAP: validate() runs over every field and the modal pre-fills blanks with 0, so 18 of the 37 items cannot be saved as loaded — 13 have weight_capacity NULL, 9 have drawer_count NULL in a positions-visible category, and all 5 uncategorised rows have no category. A handback resolves on the user's click, so the run reports success even though the modal stays open with field errors and nothing is written. Confirm the value landed on the detail card rather than trusting the run."
+  },
+  {
+    "id": "equipment.delete-equipment",
+    "title": "Delete an equipment item",
+    "intents": [
+      "delete {item}",
+      "remove {item} from the catalogue",
+      "get rid of the test equipment item",
+      "delete an equipment item i created by mistake",
+      "can i delete {item}",
+      "remove an item from the equipment list",
+      "why did my equipment delete fail"
+    ],
+    "requiredPermission": "galley-planner:equipment:delete",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment.row",
+        "withinTextParam": "item"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-delete",
+        "withinTextParam": "item",
+        "waitFor": "equipment.delete-confirm"
+      },
+      {
+        "do": "handback",
+        "target": "equipment.delete-confirm"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "Here is the equipment catalogue.",
+      "Pressing Show All first. The category you last picked is remembered between visits, so the screen does not necessarily open on the whole catalogue — and a row you are looking for can sit outside the remembered category.",
+      "This is the row for {item}. Read the name, not just the code — codes repeat here, and the wrong row would be a very expensive mistake.",
+      "Asking to delete it. Before you confirm, please understand what this does: there is no soft delete and no undo. The item is not deactivated or archived, it is removed. Nothing on this screen checks first whether the item is in use, and most of this catalogue is in use — 28 of the 37 items are referenced by packing standards. If {item} is one of them the database refuses the delete and you get only a flat 'Failed to delete equipment item' message with no clue which standards are involved. If it is one of the other 9, nothing stands in the way and the item is gone permanently, along with its weights, positions and photo. If you want it out of circulation without losing it, edit it and set the status to Inactive instead. If you genuinely mean to delete it, check what uses it first: search the packing standards for the item before you come back here.",
+      "Press Delete to confirm, or Cancel to walk away. This is the point of no return, so only press Delete if {item} is something you created and are certain nothing references."
+    ],
+    "notes": "Both screens call equipmentService.deleteItem(id, true) with no reference pre-check. 28 of the 37 live items are referenced by packing_standards with delete rule NO ACTION, so the delete raises a raw FK violation that surfaces only as the generic toast 'Failed to delete equipment item'; the remaining 9 are unreferenced and would be permanently destroyed. equipment.delete-confirm is HANDBACK ONLY — Zoe never presses it. equipment.row-delete is the trash button, disabled without galley-planner:equipment:delete. The confirm dialog on the list screen says only 'Are you sure you want to delete this equipment item?' and does not name the item, which is why the recipe highlights the row first. The list screen stays on the list and refetches after a delete; the detail screen's delete navigates back to /galley-planner-landing/equipment on success, so an assert after that handback has to be written against the list, not the detail card. Never point this recipe at one of the 37 real items — the only safe target is a throwaway created by equipment.create-equipment."
+  },
+  {
+    "id": "equipment.view-equipment",
+    "title": "View an equipment item",
+    "intents": [
+      "show me {item}",
+      "open the equipment item {item}",
+      "what are the specs of {item}",
+      "how many positions does {item} have",
+      "does {item} have rear access",
+      "what does {item} weigh",
+      "show the details for an equipment item"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "FA00667 Duty Free Large Cart · Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.info-table"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.row-positions",
+        "optional": true
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.row-rear-access"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.status"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.image"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing, where Equipment lives.",
+      "This is the equipment catalogue — 37 items, with the category rail on the left.",
+      "Pressing Show All first. The screen remembers the category you were last in, so without this the item you want can be filtered out before we start. I pick the row out of the full list rather than typing in the search box: the box matches on code or name, and codes in this catalogue are shared by more than one item, so on a long catalogue type a name there rather than a code.",
+      "Opening {item}.",
+      "This is the General Information panel. Code and Category are how the unit is filed. Full Name is what you see everywhere else, and Short Name is the abbreviation used where space is tight. Weight is the empty weight of the unit and Capacity is how much it may carry — those two are what your loading figures are built on. A dash means the field was never filled in, and a Weight or Capacity of 0 means no value is stored, not that the unit weighs or holds nothing.",
+      "Positions is how many meal slots the unit holds — the number is on the row beside the label. Drawers, trays and oven sleeves have no positions, so on those items this row is not shown at all, and that absence is correct rather than missing data.",
+      "Rear Access says whether the unit can be worked from both sides. A green tick means yes, a grey No means front only. It matters beyond this page: units with rear access get separate front and rear tabs on their packing standards.",
+      "Status is Active or Inactive for the whole catalogue. Inactive is a marker — the item stays in the catalogue and stays on any packing standard already using it.",
+      "And the Equipment Preview. Most items carry a photo; where none has been uploaded you see a No Image Available placeholder, which tells you nothing about the item beyond that."
+    ],
+    "notes": "Read-only walkthrough. equipment-detail.info-table, .info-row, .row-positions, .row-rear-access, .status and .image are plain divs — read anchors. Highlight them, never click them: a click dispatches a real pointer event that does nothing and the run still reports success. Verified values on FA001443 'Atlas Large Size Meal Cart': Active, weight 17.90, capacity 100.00, Positions 7, Rear Access yes, has a photo. Weight (kg) and Capacity (kg) fall back to the string '0' when the column is null — FA001446 'Half Waste Cart' shows Capacity 0 for that reason (weight 12.50, weight_capacity NULL). Positions is removed from the DOM when the item's category name is exactly 'Drawer', 'Tray' or 'Oven Sleeve' (case-sensitive array in EquipmentDetails.tsx), which is why that highlight is optional:true; WY000922 'Oven Atlas - 32 meals (Shelf)' is the only Oven Sleeve item and demonstrates the hidden state. Status renders off item.isactive; no row in the database has isactive=false, but two Cart rows are NULL and the API coerces them to false, so FA001444 'Atlas Half Size Meal Cart (6)' and 'Atlas Half Size Meal Cart (8)' display INACTIVE. 27 of 37 items hold a photo as a full public S3 URL rendered directly; the other 10 show the placeholder. Show All is pressed first because the selected category persists in sessionStorage across visits. Two search traps: the list search matches code OR name but never the concatenated row label, so do not pass '<code> <name>'; and 'Atlas Large Size Meal Cart' is a prefix of 'Atlas Large Size Meal Cart (6)', so both rows survive the search and the walkthrough opens whichever the row-view match resolves first — pass the fuller name when you specifically want the (6)."
+  },
+  {
+    "id": "equipment.search-sibling-equipment",
+    "title": "Search the other items in the same category",
+    "intents": [
+      "find a sibling of {item}",
+      "search the other items in the same category as {item}",
+      "what else is in this category",
+      "look for {query} in the same category as {item}",
+      "which carts are like {item}",
+      "filter the equipment rail for {query}",
+      "is there another item called {query} in this category"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "FA00667 Duty Free Large Cart · Cart"
+      },
+      {
+        "name": "query",
+        "type": "string",
+        "optional": false,
+        "description": "Text to match against the names and codes of the items in the same category.",
+        "example": "Half"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.sibling-list"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-detail.sibling-search",
+        "param": "query"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.sibling-row",
+        "withinTextParam": "query",
+        "optional": true
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "The rail on the left lists the other items in the same category as {item}. The largest category in this catalogue holds 10 items; the smallest hold one.",
+      "Filtering the rail for \"{query}\". It matches on name or code, and it filters only what has already been loaded into this screen — on a very large catalogue a sibling can exist without ever appearing here, so treat the rail as a shortcut rather than the full record.",
+      "That is the match. An empty rail means nothing loaded in this category matches \"{query}\" — widen the text, or go back to the catalogue list and search there, before concluding the item does not exist."
+    ],
+    "notes": "Read-only. The rail is built from an unparameterised equipmentService.getItems() call, then narrowed in the browser twice: first to items whose equipment_category_id matches the open item, then by the search box (case-insensitive match on name or code_s, undebounced). Because the fetch is not parameterised by category and not paged for this purpose, a genuinely large catalogue can leave real siblings out of the rail — the prose says so rather than implying the rail is authoritative. equipment-detail.sibling-list is a read anchor: highlight only, never click. The final highlight is optional:true on purpose — an empty rail is a legitimate answer and should be reported, not treated as a failure. Verified live: Cart holds 10 items, so 'Half' matches FIVE of the ten Cart items — Atlas Half Size Meal Cart, (6), (8), Duty Free Half Cart and Half Waste Cart. Five of the 37 items have no category at all; opening one of those gives a rail containing only its own kind of nothing-in-common set, so prefer a categorised item for this walkthrough. The rail is not 'the other items': it filters all loaded equipment by the open item's category, so the open item is in the list too, shown highlighted."
+  },
+  {
+    "id": "equipment.open-sibling-equipment",
+    "title": "Open another item in the same category",
+    "intents": [
+      "open {sibling} from {item}",
+      "switch to {sibling}",
+      "show me {sibling} instead",
+      "open another item in the same category",
+      "go to the next item in this category",
+      "compare {item} with {sibling}",
+      "jump to {sibling} from the equipment details"
+    ],
+    "requiredPermission": "galley-planner:equipment:read",
+    "risk": "read",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "FA00667 Duty Free Large Cart · Cart"
+      },
+      {
+        "name": "sibling",
+        "type": "string",
+        "optional": false,
+        "description": "The sibling to switch to, by NAME as the left rail shows it (the rail lists names only, not codes). Avoid a name that is the start of another item's name — 'Atlas Large Size Meal Cart' is also the start of '(6)' and '(8)', so it cannot be resolved.",
+        "example": "Duty Free Half Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.sibling-list"
+      },
+      {
+        "do": "click",
+        "target": "equipment-detail.sibling-row",
+        "withinTextParam": "sibling"
+      },
+      {
+        "do": "assert",
+        "target": "equipment-detail.info-table",
+        "textVisible": null,
+        "message": "The specification panel is not on screen at all, so this item did not load. Press the back arrow and open it from the catalogue list instead.",
+        "timeoutMs": 8000
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "These are the other items in the same category. Selecting one switches this whole screen over to it.",
+      "Opening {sibling}.",
+      "This is {sibling}, with its own specifications and photo. The item you came from is still listed in the rail, so you can step back to it whenever you like."
+    ],
+    "notes": "Read-only. equipment-detail.sibling-row carries data-zoe-label = the item's name exactly (not '<code> <name>' like the list rows), so pass a name here; a code will not match. Clicking navigates to /galley-planner-landing/equipment/<id>, which re-runs fetchData for the new id — the route param changes but the screen stays mounted, so no element appears or disappears that a waitFor could sit on. Hence the assert instead: when an id fails to load the whole card is replaced by 'Item not found or failed to load' and equipment-detail.info-table is absent, which is exactly what the assert catches. Names inside a category are not guaranteed unique or unambiguous — in Cart, 'Half Waste Cart' and 'Duty Free Large Cart' are unique, while 'Atlas Half Size Meal Cart' is a prefix of the (6) and (8) rows, so pass the fuller name when you mean one of those. The rail is filtered in the browser from an unparameterised fetch, so a sibling that exists in the database may not be present to click. The assert only proves the card is still mounted, not that the new item loaded: EquipmentDetails' catch never clears the current item, so a failed sibling fetch leaves the PREVIOUS item's table rendered and the assert passes. The 'Item not found or failed to load' branch is first-load only. A failed switch surfaces only as a toast, which no step can read — so confirm the name in the header rather than trusting the run."
+  },
+  {
+    "id": "equipment.edit-equipment-from-detail",
+    "title": "Edit an equipment item from its detail page",
+    "intents": [
+      "edit {item}",
+      "change the weight of {item}",
+      "update the specs on {item}",
+      "fix the positions on {item}",
+      "rename the equipment item {item}",
+      "correct the capacity of {item}",
+      "change the short name on {item}"
+    ],
+    "requiredPermission": "galley-planner:equipment:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement full name, if the name is what is changing.",
+        "example": "ZZ Test Cart (renamed)"
+      },
+      {
+        "name": "shortName",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement short name — 30 characters at most.",
+        "example": "ZZ Test Cart"
+      },
+      {
+        "name": "weight",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement empty weight in kilograms. Must be greater than zero.",
+        "example": "2"
+      },
+      {
+        "name": "capacity",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement carrying capacity in kilograms. Must be greater than zero.",
+        "example": "2"
+      },
+      {
+        "name": "positions",
+        "type": "string",
+        "optional": true,
+        "description": "Replacement number of meal slots. Must be greater than zero. Not present for drawers, trays or oven sleeves.",
+        "example": "6"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment-detail.edit",
+        "waitFor": "equipment-modal.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-name",
+        "param": "name",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-short-name",
+        "param": "shortName",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-weight",
+        "param": "weight",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-capacity",
+        "param": "capacity",
+        "optional": true
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-positions",
+        "param": "positions",
+        "optional": true
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "Opening the edit form. It comes up filled with what the item holds now, so anything you have not asked me to change stays exactly as it is.",
+      "Changing the full name to {name}. This is the name that appears on packing standards and loading paperwork, so a rename is visible to everyone downstream. A caution that bites on older records: the form validates every field, not just the ones you change. Thirteen items have no stored Capacity and nine have no Positions, so the form opens with a 0 there and refuses to save until a real number is typed — and those are figures off the physical unit, which I will not invent. The five items with no category cannot be saved either until one is chosen.",
+      "Setting the short name to {shortName}. The field stops at 30 characters.",
+      "Setting the weight to {weight} kg. Weight has to be greater than zero — the form rejects 0 and anything negative.",
+      "Setting the capacity to {capacity} kg, which also has to be greater than zero.",
+      "Setting the positions to {positions}. If this box is not on the form, the category is a drawer, tray or oven sleeve — those have no positions, so the form drops the field and stops asking for it.",
+      "That is the change staged — press Save Equipment to commit it. Code, Category and Full Name all have to be filled in or the form will refuse. Saving from here keeps you on this page and reloads the item, so the new values appear in the General Information table straight away."
+    ],
+    "notes": "Gated on galley-planner:equipment:update through useCan — without it the Edit button is disabled and titled 'Permission Required', so the click does nothing and the modal never opens. The form is EquipmentItemModal, the same component the list screen uses; the heading reads 'Edit Equipment Item' (create reads 'Add Equipment Item') but the button reads 'Save Equipment' in both modes. Validation, verified in EquipmentItemModal.validate(): Code, Category and Full Name required; Weight > 0; Capacity > 0; Positions > 0 unless hidden; Short Name 30 characters at most (also maxLength on the input). Weight, Capacity and Positions all reject 0 and negatives, so never pass 0 as an example. equipment-modal.field-positions is removed from the DOM — and dropped from validation — when the category selected IN THE FORM is exactly 'Drawer', 'Tray' or 'Oven Sleeve'; the form keys off the form's own selection, not the saved item, so it can vanish mid-edit. That is why the positions fill is optional:true. On success handleUpdateItem toasts and calls fetchData(), so unlike the list screen there is no navigation: the route stays put and the refetched values land in equipment-detail.info-table, where an assert could read them. equipment-modal.save is handback-only — Zoe never commits. equipment-modal.dialog is the backdrop div and a read anchor; it is used here only as a waitFor. The only safe write target is an item you created for the purpose (Code 'ZZTEST-EQ-01', Name 'ZZ Test Cart (safe to delete)', Category 'Cart', Weight 1, Capacity 1, Positions 6) — all 37 existing items are real FileMaker master data. VERIFIED TRAP: validate() runs over every field and the modal pre-fills blanks with 0, so 18 of the 37 items cannot be saved as loaded — 13 have weight_capacity NULL, 9 have drawer_count NULL in a positions-visible category, and all 5 uncategorised rows have no category. A handback resolves on the user's click, so the run reports success even though the modal stays open with field errors and nothing is written. Confirm the value landed on the detail card rather than trusting the run."
+  },
+  {
+    "id": "equipment.set-equipment-image",
+    "title": "Set the photo on an equipment item",
+    "intents": [
+      "add a photo to {item}",
+      "change the picture of {item}",
+      "upload an image for {item}",
+      "{item} has no photo, fix that",
+      "replace the photo on {item}",
+      "set the equipment image for {item}",
+      "how do i put a picture on an equipment item"
+    ],
+    "requiredPermission": "galley-planner:equipment:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.image"
+      },
+      {
+        "do": "click",
+        "target": "equipment-detail.edit",
+        "waitFor": "equipment-modal.dialog"
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.image-upload"
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "This is the current preview. A photo is optional on an equipment item; where there is none you get a No Image Available placeholder, and nothing else about the record is affected.",
+      "Opening the edit form. The dashed square on the left is the image drop-zone.",
+      "Click the drop-zone yourself and choose the file. I cannot do this part: the file chooser belongs to your computer rather than to this screen, and I have no way to reach into it — if I clicked here the walkthrough would stop with the chooser sitting open. Pick a JPG, PNG or GIF, and wait for the preview to change before you move on: the form only takes the photo once the browser has finished reading it, so the preview appearing is your signal that it is really attached.",
+      "Then press Save Equipment to commit the new photo. Press it before the preview appears and the item saves without the photo — every other field goes through and you get a success message, so the only sign is that the preview on the card is unchanged. If you change your mind before saving, Cancel closes the form and the stored photo is left exactly as it was."
+    ],
+    "notes": "Gated on galley-planner:equipment:update; without it the Edit button is disabled and the form never opens. The photo cannot be driven by Zoe under any parameterisation: the real control is <input type=\"file\" ref={fileInputRef} className=\"hidden\" accept=\"image/*\"> and the visible target equipment-modal.image-upload is a div whose onClick calls fileInputRef.current?.click(). There is no upload primitive; fillInput only writes .value, which the browser forbids on a file input; and the hidden input fails the rendered check, so it cannot be targeted directly either. A Zoe click on the drop-zone would open the operating system's file chooser and stall the run, so this step is a handback, not a click. When the user does pick a file, handleFileChange reads it with FileReader and stores the data URL in formData.base64_image, and previewImage swaps at once. Live data: 27 of 37 items have a photo, held as a full public S3 URL and rendered directly by the detail page; 10 have none. Ends in the save handback — Zoe never commits. Only safe target is a test item created for the purpose. Verified live 2026-07-26 against a throwaway item: the photo is sent as a base64 data URL in the update payload, uploaded server-side to S3, and what is stored on the item is the resulting URL. The form reads the chosen file asynchronously (FileReader), and nothing blocks Save while that read is in flight. Saving within roughly 150ms of picking the file sends an empty image: the save succeeds, every other field is written, and the photo is silently dropped. A person cannot click that fast, but an automated run can — which is why this recipe hands the drop-zone and Save over as two separate steps rather than pressing Save itself."
+  },
+  {
+    "id": "equipment.set-equipment-status",
+    "title": "Set an equipment item active or inactive",
+    "intents": [
+      "set {item} to {status}",
+      "mark {item} as inactive",
+      "deactivate {item}",
+      "reactivate {item}",
+      "change the status of {item} to {status}",
+      "take {item} out of use",
+      "is {item} active, and can you change it"
+    ],
+    "requiredPermission": "galley-planner:equipment:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "optional": false,
+        "description": "The status to set: Active or Inactive.",
+        "example": "Inactive"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.status"
+      },
+      {
+        "do": "click",
+        "target": "equipment-detail.edit",
+        "waitFor": "equipment-modal.dialog"
+      },
+      {
+        "do": "fill",
+        "target": "equipment-modal.field-status",
+        "param": "status"
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "This is the status the item carries now. Check it before changing anything, so you know what you are moving away from.",
+      "Opening the edit form.",
+      "Setting the status to {status}. Inactive is a marker rather than a deletion: the item stays in the catalogue and stays on every packing standard that already uses it. What it does is tell your team not to plan anything new around it. A caution that bites on older records: the form validates every field, not just the ones you change. Thirteen items have no stored Capacity and nine have no Positions, so the form opens with a 0 there and refuses to save until a real number is typed — and those are figures off the physical unit, which I will not invent. The five items with no category cannot be saved either until one is chosen.",
+      "Press Save Equipment to commit it. Nothing else on the form has been touched — including the photo, which stays as it is because I have not been near it. The page reloads the item in place, so the status shown on this card is the saved one."
+    ],
+    "notes": "Gated on galley-planner:equipment:update; the Edit button is disabled and titled 'Permission Required' without it. equipment-modal.field-status is a <select name=\"isactive\"> whose value is the string 'true' or 'false' and whose option labels are 'Active' and 'Inactive' — the fill selects by label, so pass 'Active' or 'Inactive' exactly. equipment-detail.status is a read anchor (a span): highlight only. It renders ACTIVE in emerald when item.isactive is truthy and INACTIVE in grey otherwise. Live data: no row has isactive=false; two Cart rows are NULL and the API coerces NULL to false, so FA001444 'Atlas Half Size Meal Cart (6)' and 'Atlas Half Size Meal Cart (8)' display as Inactive. VERIFIED, and worth stating because this recipe opens the whole form to flip one flag: saving without re-picking a photo does NOT clear the photo. The modal sends base64_image as an empty string, which is falsy so the upload branch is skipped, and it omits the picture field entirely; the repository then guards with 'if (data.picture !== undefined)', leaving the column untouched. On success handleUpdateItem toasts and calls fetchData(), so the route does not change and the new status can be read straight off equipment-detail.status or equipment-detail.info-table. equipment-modal.save is handback-only. Only safe target is a test item created for the purpose — a status change on real master data affects what planners believe they may use. VERIFIED TRAP: validate() runs over every field and the modal pre-fills blanks with 0, so 18 of the 37 items cannot be saved as loaded — 13 have weight_capacity NULL, 9 have drawer_count NULL in a positions-visible category, and all 5 uncategorised rows have no category. A handback resolves on the user's click, so the run reports success even though the modal stays open with field errors and nothing is written. Confirm the value landed on the detail card rather than trusting the run. NOT a clean single-field write, despite opening the form only to flip one flag: the payload always carries type: item.type || 'Inactive' and the repository writes it whenever defined. 11 of 37 items have type NULL, so saving one stamps the literal string 'Inactive' into the column FlightPreparationDetailsModal branches on to choose the Drawer / Cart / Oven visual — four live rows already carry that value from past edits. The photo, by contrast, IS safe: base64_image arrives empty so the upload is skipped, picture is omitted, and the repository guards with if (data.picture !== undefined), leaving the column untouched."
+  },
+  {
+    "id": "equipment.set-rear-access",
+    "title": "Change rear access on an equipment item",
+    "intents": [
+      "turn on rear access for {item}",
+      "does {item} have rear access, change it",
+      "set the rear access flag on {item}",
+      "mark {item} as double sided",
+      "{item} can be served from both sides",
+      "change has rear on {item}",
+      "toggle rear access for {item}"
+    ],
+    "requiredPermission": "galley-planner:equipment:update",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.row-rear-access"
+      },
+      {
+        "do": "click",
+        "target": "equipment-detail.edit",
+        "waitFor": "equipment-modal.dialog"
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.field-rear-access"
+      },
+      {
+        "do": "handback",
+        "target": "equipment-modal.save"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "Read this before anything else. A green tick means the unit already has rear access — it can be worked from both sides. A grey No means front only. This is the state you are about to change, so take it in now.",
+      "Opening the edit form. The Has Rear box carries the same state you just saw.",
+      "Tick the box yourself. I am leaving it to you because the box toggles rather than sets: one click flips whatever is there, so if rear access is already on, clicking turns it off. Change it only if the state on the card was wrong. A caution that bites on older records: the form validates every field, not just the ones you change. Thirteen items have no stored Capacity and nine have no Positions, so the form opens with a 0 there and refuses to save until a real number is typed — and those are figures off the physical unit, which I will not invent. The five items with no category cannot be saved either until one is chosen.",
+      "Then press Save Equipment. Rear access decides whether this unit's packing standards are split into separate front and rear tabs, so flipping it the wrong way moves real loading instructions around. Nothing else on the form has been changed, and the stored photo is left as it is."
+    ],
+    "notes": "Gated on galley-planner:equipment:update. equipment-modal.field-rear-access is <input type=\"checkbox\" name=\"is_double\">. There is no way for Zoe to set it to a chosen state: clickTarget calls .click(), which toggles, and fillInput only writes .value, which does nothing to the .checked property. So the recipe shows the current state first — equipment-detail.row-rear-access, a read anchor, highlight only — and hands the toggle to the user, who can see the tick before touching it. The detail row renders a filled emerald CheckCircle when item.is_double is true and an italic grey 'No' when false. is_double drives whether packing standards present separate Front and Rear tabs, so a wrong flip has downstream effect on loading instructions, not just on this card. Note the detail row shares its container with Positions and is the only thing in that row for Drawer, Tray and Oven Sleeve items, where Positions is removed. VERIFIED: saving without re-picking a photo does NOT clear the photo — base64_image goes up as an empty string (falsy, so the upload is skipped), the picture field is omitted entirely, and the repository guards with 'if (data.picture !== undefined)', so the column is left untouched. Live examples: FA001443 'Atlas Large Size Meal Cart' and FA00667 'Duty Free Large Cart' have rear access; FA001444 'Atlas Half Size Meal Cart' does not. Ends in the save handback — Zoe never commits. VERIFIED TRAP: validate() runs over every field and the modal pre-fills blanks with 0, so 18 of the 37 items cannot be saved as loaded — 13 have weight_capacity NULL, 9 have drawer_count NULL in a positions-visible category, and all 5 uncategorised rows have no category. A handback resolves on the user's click, so the run reports success even though the modal stays open with field errors and nothing is written. Confirm the value landed on the detail card rather than trusting the run. NOT a clean single-field write, despite opening the form only to flip one flag: the payload always carries type: item.type || 'Inactive' and the repository writes it whenever defined. 11 of 37 items have type NULL, so saving one stamps the literal string 'Inactive' into the column FlightPreparationDetailsModal branches on to choose the Drawer / Cart / Oven visual — four live rows already carry that value from past edits. The photo, by contrast, IS safe: base64_image arrives empty so the upload is skipped, picture is omitted, and the repository guards with if (data.picture !== undefined), leaving the column untouched."
+  },
+  {
+    "id": "equipment.delete-equipment-from-detail",
+    "title": "Delete an equipment item from its detail page",
+    "intents": [
+      "delete {item}",
+      "remove the equipment item {item}",
+      "get rid of {item} from the catalogue",
+      "delete this equipment item",
+      "remove {item} permanently",
+      "delete the test cart i created",
+      "why can't i delete {item}"
+    ],
+    "requiredPermission": "galley-planner:equipment:delete",
+    "risk": "write",
+    "params": [
+      {
+        "name": "item",
+        "type": "string",
+        "optional": false,
+        "description": "Item as the row reads it: code, name, then the category after a dot. All three matter — codes repeat (FA001443 covers three rows) and five pairs of rows share a code and name, separated only by category, so anything less can resolve the wrong row.",
+        "example": "ZZTEST-EQ-01 ZZ Test Cart (safe to delete) · Cart"
+      }
+    ],
+    "steps": [
+      {
+        "do": "highlight",
+        "target": "sidebar.galley-planner"
+      },
+      {
+        "do": "click",
+        "target": "sidebar.galley-planner",
+        "waitFor": "galley-planner-landing.equipment-card"
+      },
+      {
+        "do": "click",
+        "target": "galley-planner-landing.equipment-card",
+        "waitFor": "equipment.page"
+      },
+      {
+        "do": "click",
+        "target": "equipment.show-all",
+        "waitFor": "equipment.row"
+      },
+      {
+        "do": "click",
+        "target": "equipment.row-view",
+        "withinTextParam": "item",
+        "waitFor": "equipment-detail.page"
+      },
+      {
+        "do": "highlight",
+        "target": "equipment-detail.info-table"
+      },
+      {
+        "do": "click",
+        "target": "equipment-detail.delete",
+        "waitFor": "equipment.delete-confirm"
+      },
+      {
+        "do": "handback",
+        "target": "equipment.delete-confirm"
+      }
+    ],
+    "prose": [
+      "I'll highlight Galley Planner in the sidebar.",
+      "Opening the Galley Planner landing.",
+      "This is the equipment catalogue.",
+      "Pressing Show All so the whole catalogue is in view — the screen remembers the category you were last in, and I pick the row out of the full list rather than searching for it.",
+      "Opening {item}.",
+      "Check the code and name here first. Codes in this catalogue are shared by more than one item, so the name is what tells you that this is the record you mean.",
+      "Asking to delete it.",
+      "Press Delete to confirm, and read this first. The deletion is permanent — there is no archive and no undo. Most items in this catalogue are already used by packing standards, and the database refuses to remove those: you get back only a general 'Failed to delete equipment item' message, with nothing changed. An item that nothing references is destroyed for good. On success this screen closes and returns you to the catalogue list, so there is nothing left here to check afterwards — look for the item's absence from the list instead."
+    ],
+    "notes": "Gated on galley-planner:equipment:delete through useCan — without it the Delete button is disabled and titled 'Permission Required'. Both screens call equipmentService.deleteItem(id, true) with no reference pre-check, so nothing warns you before the attempt. Verified in the database: 28 of the 37 items are referenced by packing_standards with delete rule NO ACTION, so deleting one of those raises a raw foreign-key violation that the screen surfaces only as the generic toast 'Failed to delete equipment item'. The remaining 9 are unreferenced and WOULD be permanently destroyed. Never point this at one of the 37 — they are all real FileMaker master data; create a throwaway item (Code 'ZZTEST-EQ-01', Name 'ZZ Test Cart (safe to delete)', Category 'Cart') and delete that. The confirmation dialog is the shared DeleteConfirmationModal, so its ids are equipment.delete-confirm and equipment.delete-cancel even on the detail screen. equipment.delete-confirm is handback-only: Zoe never presses it. On success handleDeleteItem navigates to /galley-planner-landing/equipment, so this page is gone — any verification has to be written against the list screen, not against equipment-detail.info-table. equipment-detail.info-table is highlighted here purely as a read anchor to confirm identity; it is a div and must never be clicked. On this screen a FAILED delete leaves the confirmation dialog open — unlike the list screen, the handler has no finally that closes it — so after a foreign-key rejection the user is left facing an enabled Delete button and can press it again. Also note this dialog DOES name the item, whereas the list screen's does not."
+  }
+]
